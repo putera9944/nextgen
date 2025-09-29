@@ -872,35 +872,45 @@ window.login = login;  // pastikan global
 
 // Initialize Application
         async function init(){
-          // --- kekalkan inisialisasi sedia ada
-          loadState();
-          updateUI();
-          populateFields();
-          updateHamburgerLocks?.();
-          updateFooterLocks?.();
-          updateHeaderName?.();
-          if (typeof hydrateDataSave === 'function') hydrateDataSave();
+            // --- inisialisasi asas
+            loadState();
+            updateUI();
+            populateFields();
+            updateHamburgerLocks?.();
+            updateFooterLocks?.();
+            updateHeaderName?.();
+            if (typeof hydrateDataSave === 'function') hydrateDataSave();
 
-          // --- LOGIN PANTAS DENGAN TOKEN
-          const sess = localStorage.getItem('tvetmara_token');
-          if (sess) {
-            // masuk terus (elak tunggu 3-5s); sahkan di belakang tab
-            state.auth = { ...(state.auth||{}), isLoggedIn: true };
-            saveState();
-            showScreen(document.getElementById('welcome') ? 'welcome' : 'learning');
+            // --- tentukan "last screen" yang sah
+            const last = localStorage.getItem('tvetmara_last_screen');
+            const exists = id => !!document.getElementById(id);
+            const go =
+                (last && exists(last)) ? last :
+                (exists('learning') ? 'learning' :
+                (exists('welcome')  ? 'welcome'  :
+                (exists('cover')    ? 'cover'    : (document.querySelector('.screen')?.id || 'cover'))));
 
-            // sahkan token secara async; kalau tidak sah → logout
-            validateToken(sess).catch(() => { logout(); });
-            return; // hentikan init di sini
-          }
+            // --- LOGIN PANTAS DENGAN TOKEN
+            const sess = localStorage.getItem('tvetmara_token');
+            if (sess) {
+                // Masuk serta-merta; sahkan token di belakang tab
+                state.auth = { ...(state.auth||{}), isLoggedIn: true };
+                saveState();
+                showScreen(go);
 
-          // --- fallback biasa jika tiada token
-          if (state.auth?.isLoggedIn) {
-            showScreen('welcome');
-          } else {
-            showScreen('cover');
-          }
-        }
+                // Sahkan secara async; kalau tak sah → logout
+                validateToken(sess).catch(() => { logout(); });
+                return;
+            }
+
+            // --- fallback bila tiada token
+            if (state.auth?.isLoggedIn) {
+                showScreen(go);
+            } else {
+                showScreen('cover');
+            }
+            }
+
 
         // pemanggil kecil untuk sahkan token
         async function validateToken(token){
@@ -941,31 +951,15 @@ window.login = login;  // pastikan global
 
 
         function logout(){
-          // senyapkan autosave sepanjang reset
-          window.__noSheet = true;
+  window.__noSheet = true;
+  localStorage.removeItem('tvetmara_token');
+  // JANGAN removeItem('tvetmara_last_screen');
+  state = { auth:{isLoggedIn:false}, profile:{}, missions:{s1:[false,false,false], s2:[false,false,false]}, pathway:'', navigation:{} };
+  saveState();
+  showScreen('cover');
+  setTimeout(()=>{ window.__noSheet = false; }, 400);
+}
 
-          // buang token sesi
-          localStorage.removeItem('tvetmara_token');
-
-          // reset state minimum
-          state = {
-            auth: { isLoggedIn: false, email: '', name: '' },
-            profile: {},
-            missions: { s1:[false,false,false], s2:[false,false,false],
-              goalsSaved:false, cvBuilt:false, explorerCompleted:false,
-              fieldSelected:false, pathwaySelected:false },
-            pathway: '',
-            navigation: {}
-          };
-
-          saveState();
-          updateUI?.();
-          updateHeaderName?.();
-          showScreen('cover');
-
-          // buka semula autosave selepas UI stabil
-          setTimeout(() => { window.__noSheet = false; }, 400);
-        }
 
         // Forgot password
 
@@ -1007,6 +1001,12 @@ window.login = login;  // pastikan global
           const target = (prev && prev !== 'cover') ? prev : fallback;
           showScreen(target);
         }
+
+        function __rememberable(id){
+          // skrin yang TIDAK disimpan sebagai "last screen"
+          return id && !['cover','welcome','profile','fields','pathway'].includes(id);
+          }
+
 
 
 
@@ -1054,57 +1054,47 @@ window.login = login;  // pastikan global
         }*/
 
 function showScreen(screenName, fromScreen = null) {
-  // pastikan objek wujud
   state.navigation = state.navigation || {};
 
-  // skrin aktif sebelum tukar
   const was = state.navigation.currentScreen ||
               (document.querySelector('.screen:not(.hidden)')?.id || null);
 
-  // --- Tetapkan previousScreen dengan berhati-hati ---
+  // --- kawal previousScreen untuk balik ---
   if (screenName === 'profile') {
-    // Jika onboarding (lepas register), JANGAN overwrite previous — biar saveProfile tentukan (#learning)
     if (!state.navigation.onboarding) {
-      // elak loop: jangan jadikan 'profile/fields/pathway/cover' sebagai previous
-      if (was && !['profile','fields','pathway','cover'].includes(was)) {
+      if (was && !['profile','fields','pathway','cover','welcome'].includes(was)) {
         state.navigation.previousScreen = was;
       } else {
         state.navigation.previousScreen = state.navigation.previousScreen || 'dashboard';
       }
     }
   } else if (fromScreen) {
-    // pemanggil tentukan secara eksplisit
     state.navigation.previousScreen = fromScreen;
   } else if (screenName === 'fields' || screenName === 'pathway') {
-    // bila buka pemilihan, ingat dari mana datang (elak loop)
-    if (was && !['fields','pathway','cover'].includes(was)) {
+    if (was && !['fields','pathway','cover','welcome'].includes(was)) {
       state.navigation.previousScreen = was;
     }
   }
-  // (lain-lain skrin: jangan ubah previousScreen)
 
-  // --- Tunjuk skrin (dengan fallback selamat) ---
+  // --- HALANG "welcome" kalau baru lepas Save Profile (nav hold) // ★
+  if (screenName === 'welcome' && window.__navHoldUntil && Date.now() < window.__navHoldUntil) {
+    console.debug('[NAV] welcome suppressed during navHold');
+    return;
+  }
+
+  // --- render ---
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-
-  let target = document.getElementById(screenName);
-  if (!target) {
-    // fallback ikut keutamaan
-    target = document.getElementById('welcome')
+  let target = document.getElementById(screenName)
+          || document.getElementById('welcome')
           || document.getElementById('learning')
           || document.getElementById('cover')
           || document.querySelector('.screen');
-  }
-  if (!target) {
-    console.warn('Screen not found:', screenName);
-    return;
-  }
+  if (!target){ console.warn('Screen not found:', screenName); return; }
   target.classList.remove('hidden');
 
-  // Navbar show/hide jika ada
   const nav = document.getElementById('navigation');
   if (nav) (target.id === 'cover') ? nav.classList.add('hidden') : nav.classList.remove('hidden');
 
-  // Loader khusus
   if (target.id === 'profile')   loadProfile();
   if (target.id === 'learning')  updateLearningScreen();
   if (target.id === 'dashboard') { updateDashboard(); updatePathwayTimeline(); }
@@ -1113,12 +1103,17 @@ function showScreen(screenName, fromScreen = null) {
   if (target.id === 'goals')     loadGoalsPage();
   if (target.id === 'cvbuilder') loadCVBuilderPage();
 
-  // Rekod skrin semasa
   state.navigation.currentScreen = target.id;
 
-  // Hydrate data-save (tak ganggu UI)
+  // SIMPAN “last screen” ke localStorage // ★
+  if (__rememberable(target.id)) {
+    state.navigation.lastScreen = target.id;
+    try { localStorage.setItem('tvetmara_last_screen', target.id); } catch(_) {}
+  }
+
   setTimeout(()=>{ try { hydrateDataSave?.(); } catch(_) {} }, 0);
 }
+
 
 
 
@@ -1185,7 +1180,7 @@ function showScreen(screenName, fromScreen = null) {
             document.getElementById('errorMessage').classList.add('hidden');
         }
 
-        function saveProfile() {
+        /*function saveProfile() {
   clearValidationErrors?.();
 
   const name   = document.getElementById('profileName')?.value?.trim() || '';
@@ -1242,7 +1237,57 @@ function showScreen(screenName, fromScreen = null) {
       } catch(_) {}
     }, 0);
   }
+}*/
+
+//fungsi saveProfile ni ada tambahan hold 1.5saat
+function saveProfile() {
+  clearValidationErrors?.();
+
+  const name   = document.getElementById('profileName')?.value?.trim() || '';
+  const dob    = document.getElementById('profileDob')?.value || '';
+  const school = document.getElementById('profileSchool')?.value?.trim() || '';
+  const grade  = document.getElementById('profileGrade')?.value || '';
+  const email  = document.getElementById('profileEmail')?.value || '';
+  const field  = document.getElementById('profileField')?.value || '';
+
+  const missing = [];
+  if (!name)   { showFieldError?.('profileName','Full Name is required');           missing.push('Full Name'); }
+  if (!dob)    { showFieldError?.('profileDob','Date of Birth is required');        missing.push('Date of Birth'); }
+  if (!school) { showFieldError?.('profileSchool','School/Institution is required');missing.push('School/Institution'); }
+  if (!grade)  { showFieldError?.('profileGrade','Grade Level is required');        missing.push('Grade Level'); }
+  if (missing.length){
+    (showErrorMessage?.(`Please complete: ${missing.join(', ')}`)) || alert(`Please complete: ${missing.join(', ')}`);
+    return;
+  }
+
+  state.profile = { ...(state.profile||{}), name, email, dob, school, grade, field };
+  saveState();
+  updateUI?.(); updateHeaderName?.();
+
+  // NAV HOLD: elak 'welcome' override oleh hook lain (1.5s)
+  window.__navHoldUntil = Date.now() + 1500;
+
+  const fromRegister = !!(state.navigation && state.navigation.onboarding);
+  if (state.navigation) state.navigation.onboarding = false;
+
+  const prev = state.navigation?.previousScreen;
+  const back = (prev && prev !== 'cover' && prev !== 'profile') ? prev : 'dashboard';
+
+  showScreen(fromRegister ? 'learning' : back);
+
+  // HANTAR ke Google Sheet (sekali saja)
+  if (!window.__saveProfileSendAt || Date.now() > window.__saveProfileSendAt) {
+    window.__saveProfileSendAt = Date.now() + 500;
+    setTimeout(() => {
+      try { typeof syncSaveFields === 'function' && syncSaveFields(); } catch(_) {}
+      try {
+        const send = window.sendToSheetSafe || window.sendToSheet;
+        typeof send === 'function' && send();
+      } catch(_) {}
+    }, 0);
+  }
 }
+
 
 
         // Timeline System
