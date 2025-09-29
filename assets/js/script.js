@@ -3925,11 +3925,15 @@ if (iconEl) iconEl.textContent = field.icon || '🎓';
       var thisCombo = (fieldKey||'') + '|' + (pathwayKey||'');
       var cvEl = document.getElementById('cvSummary');
       if (cvEl && thisCombo && thisCombo !== lastCombo){
-        var answer = confirm('You changed your field/pathway. Regenerate your Professional Summary now?');
+        /*var answer = confirm('You changed your field/pathway. Regenerate your Professional Summary now?');
         if (answer){
           regenerateSummary();
         }
+        rememberKeys(fieldKey, pathwayKey);*/
+        // Senyap: auto-regenerate tanpa popup
+        try { regenerateSummary(); } catch(_){}
         rememberKeys(fieldKey, pathwayKey);
+
       }
     }, 400);
   });
@@ -5514,7 +5518,7 @@ function lockCard(card, locked, type) {
       const text = await res.text();
       let json = {}; try { json = JSON.parse(text); } catch(e){}
       if (!res.ok || !json.ok) throw new Error(json.error || ("HTTP " + res.status + " " + text.slice(0,180)));
-      showToast("Saved to Google Sheet");
+      //showToast("Saved to Google Sheet");
       console.log("GAS save OK:", json);
     } catch (err) {
       console.error("GAS save error:", err);
