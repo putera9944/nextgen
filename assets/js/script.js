@@ -5831,7 +5831,7 @@ async function saveToGoogleSheet(customRow){
     });
     const data = await res.json().catch(()=>({ ok:false, message:'Invalid JSON' }));
     if (res.ok && (data.ok || data.status==='ok')) {
-      alert('Saved to Google Sheet ✅');
+      //alert('Saved to Google Sheet ✅');
     } else {
       alert('Save failed ❌: ' + (data.message || res.statusText));
     }
@@ -5918,7 +5918,7 @@ async function sendToSheet(){
     throw new Error(json.error || ('HTTP '+res.status));
   }
 
-  alert('Saved to Google Sheet ✅');
+  //alert('Saved to Google Sheet ✅');
 }
 
 
