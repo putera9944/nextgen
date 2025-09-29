@@ -6129,3 +6129,31 @@ window.autoSaveToSheet = autoSaveToSheet;
   });
 })();
 
+// === MUTE popups (letak di baris terakhir script.js) ===
+(function () {
+  function mute() {
+    // 1) Matikan semua toast
+    window.showToast = function(){};
+
+    // 2) Matikan confirm "Regenerate your Professional Summary..."
+    const origConfirm = window.confirm;
+    window.confirm = function (msg) {
+      if (typeof msg === 'string' && /Regenerate your Professional Summary/i.test(msg)) {
+        try { regenerateSummary?.(); } catch(_){}
+        return true; // auto-OK tanpa popup
+      }
+      return origConfirm ? origConfirm(msg) : true;
+    };
+
+    // (opsyen) semak versi build supaya tahu skrip baru dah termuat
+    window.__BUILD_ID = 'mute-2025-09-29a';
+    console.log('[MUTE] popups disabled — build', window.__BUILD_ID);
+  }
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', mute);
+  } else {
+    mute();
+  }
+})();
+
+
