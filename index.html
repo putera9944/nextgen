@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<base target='\"_top\"'/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NextGEN TVETMARA Career Passport</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://i.postimg.cc" rel="dns-prefetch"/>
+<link crossorigin="" href="https://i.postimg.cc" rel="preconnect"/>
+<!-- Preload badge images -->
+<link as="image" href="https://i.postimg.cc/jSdYB8vC/3.png" rel="preload"/>
+<link as="image" href="https://i.postimg.cc/Zn8hz21v/2.png" rel="preload"/>
+<link as="image" href="https://i.postimg.cc/N0FY2NrZ/1.png" rel="preload"/>
+<link href="assets/css/style.css" rel="stylesheet"/></head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-blue-600 text-white p-4 no-print" id="navigation">
+<div class="container mx-auto flex justify-between items-center">
+<div class="flex items-center space-x-3">
+<button aria-label="Menu" class="mr-2 p-2 rounded hover:bg-blue-500 focus:outline-none" id="hamburgerBtn">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<img alt="NextGEN" class="w-12 h-12 object-contain" onerror="this.style.display='none';" src="https://i.postimg.cc/vmHr5DnS/NEXT-GEN.png"/>
+<h1 class="text-3xl font-bold">Career Passport</h1>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="text-sm opacity-90">Welcome back,</div>
+<div class="text-base font-semibold truncate max-w-[240px]" id="headerRegName">-</div>
+<button class="mt-1 bg-red-500 px-3 py-1 rounded hover:bg-red-600" id="logoutBtn">Logout</button>
+</div>
+</div>
+</nav>
+<div class="container mx-auto p-4">
+<div class="screen" id="cover">
+<div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 mt-20">
+<div class="text-center mb-6"><img alt="NextGEN Logo" class="w-32 h-32 mx-auto mb-4 object-contain" onerror="this.style.display='none';" src="https://i.postimg.cc/vmHr5DnS/NEXT-GEN.png"/></div>
+<h2 class="text-center mb-8 text-blue-600"><span class="text-3xl font-bold">NextGEN TVETMARA</span><br/>
+<span class="text-xl font-normal">Career Passport</span></h2>
+<div id="loginForm">
+<h3 class="text-xl font-semibold mb-4">Login</h3><input class="w-full p-3 border rounded mb-4" id="loginEmail" placeholder="Email" type="email"/> <input class="w-full p-3 border rounded mb-4" id="loginPassword" placeholder="Password" type="password"/> <button class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 mb-4" onclick="login()">Login</button>
+<p class="text-center">Don't have an account? <button class="text-blue-600 hover:underline" onclick="toggleForm()">Register</button></p>
+</div>
+<div class="hidden" id="registerForm">
+<h3 class="text-xl font-semibold mb-4">Register</h3><input class="w-full p-3 border rounded mb-4" id="regName" placeholder="Full Name" type="text"/> <input class="w-full p-3 border rounded mb-4" id="regEmail" placeholder="Email" type="email"/> <input class="w-full p-3 border rounded mb-4" id="regPassword" placeholder="Password" type="password"/> <button class="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700 mb-4" onclick="register()">Register</button>
+<p class="text-center">Already have an account? <button class="text-blue-600 hover:underline" onclick="toggleForm()">Login</button></p>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="welcome">
+<div class="text-center mb-8">
+<h2 class="text-4xl font-bold text-blue-600 mb-4">Welcome to Your Career Journey!</h2>
+<p class="text-xl text-gray-600">Discover your path through 3 learning phases</p>
+</div>
+<div class="grid md:grid-cols-3 gap-8 mb-8">
+<div class="bg-white rounded-lg shadow-lg p-6 text-center">
+<div class="text-4xl mb-4">
+            🎯
+          </div>
+<h3 class="text-xl font-bold mb-2">Phase 1: Discovery</h3>
+<p class="text-gray-600">Discover &amp; Innovate, Design &amp; Connect, Define &amp; Lead</p>
+<div class="mt-4 text-yellow-600 font-semibold">
+            Beginner Badge
+          </div>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6 text-center">
+<div class="text-4xl mb-4">
+            💡
+          </div>
+<h3 class="text-xl font-bold mb-2">Phase 2: Inspiration</h3>
+<p class="text-gray-600">Academic, Career &amp; Entrepreneurship Pathways</p>
+<div class="mt-4 text-gray-600 font-semibold">
+            Intermediate Badge
+          </div>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6 text-center">
+<div class="text-4xl mb-4">
+            🚀
+          </div>
+<h3 class="text-xl font-bold mb-2">Phase 3: Achievement</h3>
+<p class="text-gray-600">Set Goals &amp; Build Your Professional CV</p>
+<div class="mt-4 text-yellow-600 font-semibold">
+            Advanced Badge
+          </div>
+</div>
+</div>
+<div class="text-center">
+<button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 text-lg" onclick="showScreen('profile')">Start Your Journey</button>
+</div>
+</div>
+<div class="screen hidden" id="profile">
+<div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+<h2 class="text-3xl font-bold mb-6 text-blue-600">Your Profile</h2>
+<div class="mb-8 text-center">
+<div class="flex flex-col items-center">
+<div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-4 overflow-hidden border-4 border-blue-200" id="profilePictureDisplay">
+<span class="text-gray-500 text-sm">No Image</span>
+</div><input accept="image/*" class="hidden" id="profilePictureInput" onchange="handleProfilePictureChange(this)" type="file"/> <button class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 font-semibold mb-2" onclick="document.getElementById('profilePictureInput').click()" type="button">Upload Profile Picture</button>
+<p class="text-xs text-gray-500">Recommended: Square image, max 2MB</p>
+</div>
+</div>
+<div class="grid md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium mb-2">Full Name <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileName" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Email <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded bg-gray-100" id="profileEmail" readonly="" type="email"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Date of Birth <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileDob" required="" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">School/Institution <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileSchool" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Grade Level <span class="text-red-500">*</span></label> <select class="w-full p-3 border rounded" id="profileGrade" required="">
+<option value="">
+                Select Grade
+              </option>
+<option value="Form1">
+                Form 1
+              </option>
+<option value="Form2">
+                Form 2
+              </option>
+<option value="Form3">
+                Form 3
+              </option>
+<option value="Form4">
+                Form 4
+              </option>
+<option value="Form5">
+                Form 5
+              </option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Interested Field <span class="text-gray-400">(Optional)</span></label> <select class="w-full p-3 border rounded" id="profileField">
+<option value="">
+                Select Field
+              </option>
+<option value="oil-gas">
+                Oil &amp; Gas
+              </option>
+<option value="electrical">
+                Electrical
+              </option>
+<option value="electronics">
+                Electronics
+              </option>
+<option value="biotech">
+                Biotechnology
+              </option>
+<option value="civil">
+                Civil
+              </option>
+<option value="manufacturing">
+                Manufacturing Mechanical
+              </option>
+<option value="arts">
+                Arts &amp; Design
+              </option>
+<option value="built-env">
+                Built Environment
+              </option>
+<option value="materials">
+                Materials Processing
+              </option>
+<option value="automotive">
+                Automotive
+              </option>
+<option value="biomedical">
+                Biomedical
+              </option>
+</select>
+</div>
+</div>
+<div class="mt-8 text-center">
+<div class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4" id="errorMessage">
+<div class="flex items-center">
+<span class="text-red-500 mr-2">⚠️</span> <span id="errorText"></span>
+</div>
+</div>
+<p class="text-sm text-gray-600 mb-4"><span class="text-red-500">*</span> Required fields</p><button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700" onclick="saveProfile()">Save Profile</button>
+<button onclick="resetProfile()" style="margin-top:10px;background-color:#d32f2f;color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;">Reset Semua Data</button>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="learning">
+<h2 class="text-3xl font-bold mb-8 text-blue-600 text-center">Learning Journey</h2>
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+<div class="grid md:grid-cols-4 gap-6 text-center mb-6">
+<div>
+<div class="text-2xl font-bold text-blue-600" id="learningProgress">
+              0%
+            </div>
+<div class="text-sm text-gray-600">
+              Overall Progress
+            </div>
+</div>
+<div>
+<div class="text-2xl font-bold text-green-600" id="learningMarks">
+              0
+            </div>
+<div class="text-sm text-gray-600">
+              Total Marks
+            </div>
+</div>
+<div>
+<div class="text-2xl font-bold text-purple-600" id="learningMissions">
+              0/6
+            </div>
+<div class="text-sm text-gray-600">
+              Missions Complete
+            </div>
+</div>
+<div>
+<div class="text-2xl font-bold text-yellow-600" id="learningBadges">
+              0/3
+            </div>
+<div class="text-sm text-gray-600">
+              Badges Earned
+            </div>
+</div>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-4">
+<div class="bg-gradient-to-r from-blue-500 to-green-500 h-4 rounded-full transition-all duration-500" id="progressBar" style="width: 0%"></div>
+</div>
+<p class="text-center text-sm text-gray-600 mt-2">Complete all missions to unlock your career passport!</p>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center">
+<div class="text-4xl mr-4">
+              🎯
+            </div>
+<h3 class="text-2xl font-bold">Section 1: Opening Spark</h3>
+</div>
+<div class="w-16 h-16 rounded-full flex items-center justify-center badge-locked" id="beginnerBadge"><img alt="Beginner Badge" class="w-full h-full object-contain" onerror="this.style.display='none';" src="https://i.postimg.cc/N0FY2NrZ/1.png"/></div>
+</div>
+<div class="grid md:grid-cols-3 gap-6">
+<div class="mission-card mission-incomplete p-6 rounded-lg text-center" data-mission="s1m1">
+<div class="text-3xl mb-3">
+              💡
+            </div>
+<h4 class="font-bold mb-2 text-center">Principle 1: Discover &amp; Innovate</h4>
+<p class="text-sm text-blue-600 font-medium mb-2 text-center">(Motivation)</p>
+<p class="text-sm text-gray-600 mb-4 text-center">Explore innovation and discovery</p><button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full text-center" onclick="startMission('s1', 1)">Start Principle</button>
+</div>
+<div class="mission-card mission-incomplete p-6 rounded-lg text-center" data-mission="s1m2">
+<div class="text-3xl mb-3">
+              🎨
+            </div>
+<h4 class="font-bold mb-2 text-center">Principle 2: Design &amp; Connect</h4>
+<p class="text-sm text-blue-600 font-medium mb-2 text-center">(Inspiration)</p>
+<p class="text-sm text-gray-600 mb-4 text-center">Learn design thinking and connections</p><button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full text-center" onclick="startMission('s1', 2)">Start Principle</button>
+</div>
+<div class="mission-card mission-incomplete p-6 rounded-lg text-center" data-mission="s1m3">
+<div class="text-3xl mb-3">
+              👑
+            </div>
+<h4 class="font-bold mb-2 text-center">Principle 3: Define &amp; Lead</h4>
+<p class="text-sm text-gray-600 mb-4 text-center">Develop leadership and definition skills</p><button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full text-center" onclick="startMission('s1', 3)">Start Principle</button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center">
+<div class="text-4xl mr-4">
+              💡
+            </div>
+<h3 class="text-2xl font-bold">Section 2: Inspiration Talkshow (Pitching with Icon)</h3>
+</div>
+<div class="w-16 h-16 rounded-full flex items-center justify-center badge-locked" id="intermediateBadge"><img alt="Intermediate Badge" class="w-full h-full object-contain" onerror="this.style.display='none';" src="https://i.postimg.cc/Zn8hz21v/2.png"/></div>
+</div>
+<div class="grid md:grid-cols-3 gap-6">
+<div class="mission-card mission-incomplete p-6 rounded-lg text-center" data-mission="s2m1">
+<div class="text-3xl mb-3">
+              🎓
+            </div>
+<h4 class="font-bold mb-2 text-center">Inspire 1: Academic Pathway</h4>
+<p class="text-sm text-blue-600 font-medium mb-2 text-center">(Knowledge Highway)</p>
+<p class="text-sm text-gray-600 mb-4 text-center">Explore academic opportunities</p><button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full text-center" onclick="startMission('s2', 1)">Start Inspire</button>
+</div>
+<div class="mission-card mission-incomplete p-6 rounded-lg text-center" data-mission="s2m2">
+<div class="text-3xl mb-3">
+              💼
+            </div>
+<h4 class="font-bold mb-2 text-center">Inspire 2: Career Pathway</h4>
+<p class="text-sm text-blue-600 font-medium mb-2 text-center">(Pro Career Track)</p>
+<p class="text-sm text-gray-600 mb-4 text-center">Discover career possibilities</p><button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full text-center" onclick="startMission('s2', 2)">Start Inspire</button>
+</div>
+<div class="mission-card mission-incomplete p-6 rounded-lg text-center" data-mission="s2m3">
+<div class="text-3xl mb-3">
+              🚀
+            </div>
+<h4 class="font-bold mb-2 text-center">Inspire 3: Entrepreneurship</h4>
+<p class="text-sm text-blue-600 font-medium mb-2 text-center">(Biz Creator Journey)</p>
+<p class="text-sm text-gray-600 mb-4 text-center">Learn entrepreneurial skills</p><button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full text-center" onclick="startMission('s2', 3)">Start Inspire</button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+<h3 class="text-2xl font-bold mb-6 text-center">Choose Your Direction</h3>
+<div class="grid md:grid-cols-3 gap-8">
+<div class="bg-gradient-to-br from-teal-50 to-teal-100 p-8 rounded-lg text-center hover:shadow-lg transition-shadow">
+<div class="text-5xl mb-4">
+              🧭
+            </div>
+<h4 class="text-xl font-bold mb-4">Career Explorer</h4>
+<p class="text-gray-600 mb-6">Find Your Match with a quick interest quiz</p>
+<div class="mb-4">
+<span class="text-sm font-medium text-gray-700">Quiz Status:</span> <span class="text-sm font-bold text-teal-600" id="quizStatus">Not Taken</span>
+</div>
+<div class="mb-4">
+<span class="text-sm font-medium text-gray-700">Suitable Field:</span> <span class="text-sm font-bold text-teal-600" id="suitableField">(based on quiz result)</span>
+</div><button class="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 font-semibold" id="careerQuizButton" onclick="startCareerQuiz()">Take Quiz</button>
+</div>
+<div class="bg-gradient-to-br from-purple-50 to-purple-100 p-8 rounded-lg text-center hover:shadow-lg transition-shadow">
+<div class="text-5xl mb-4">
+              🔬
+            </div>
+<h4 class="text-xl font-bold mb-4">Select Field</h4>
+<p class="text-gray-600 mb-6">Choose your most preferred TVET field of study</p>
+<div class="mb-4">
+<span class="text-sm font-medium text-gray-700">Current Field:</span> <span class="text-sm font-bold text-purple-600" id="currentField">Not Selected</span>
+</div><button class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 font-semibold" onclick="showScreen('fields')">Choose Field</button>
+</div>
+<div class="bg-gradient-to-br from-orange-50 to-orange-100 p-8 rounded-lg text-center hover:shadow-lg transition-shadow">
+<div class="text-5xl mb-4">
+              🛤️
+            </div>
+<h4 class="text-xl font-bold mb-4">Select Pathway</h4>
+<p class="text-gray-600 mb-6">Choose your career pathway direction</p>
+<div class="mb-4">
+<span class="text-sm font-medium text-gray-700">Current Pathway:</span> <span class="text-sm font-bold text-orange-600" id="currentPathway">Not Selected</span>
+</div><button class="bg-orange-600 text-white px-8 py-3 rounded-lg hover:bg-orange-700 font-semibold" onclick="showScreen('pathway')">Choose Pathway</button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center">
+<div class="text-4xl mr-4">
+              🏆
+            </div>
+<h3 class="text-2xl font-bold">Section 3: Achievement Phase</h3>
+</div>
+<div class="w-16 h-16 rounded-full flex items-center justify-center badge-locked" id="advancedBadge"><img alt="Advanced Badge" class="w-full h-full object-contain" onerror="this.style.display='none';" src="https://i.postimg.cc/jSdYB8vC/3.png"/></div>
+</div>
+<div class="grid md:grid-cols-2 gap-8">
+<div class="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-lg text-center hover:shadow-lg transition-shadow">
+<div class="text-5xl mb-4">
+              🎯
+            </div>
+<h4 class="text-xl font-bold mb-4">Set Goals</h4>
+<p class="text-gray-600 mb-4">Define your academic pathway and career targets</p>
+<div class="mb-4 space-y-2">
+<div>
+<span class="text-sm font-medium text-gray-700">Highest Education:</span> <span class="text-sm font-bold text-blue-600" id="currentEducationTarget">Not Selected</span>
+</div>
+<div>
+<span class="text-sm font-medium text-gray-700">Time Horizon:</span> <span class="text-sm font-bold text-blue-600" id="currentTimeHorizon">Not Selected</span>
+</div>
+</div><button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold" onclick="showScreen('goals')">Set Your Goals</button>
+</div>
+<div class="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-lg text-center hover:shadow-lg transition-shadow">
+<div class="text-5xl mb-4">
+              📄
+            </div>
+<h4 class="text-xl font-bold mb-4">CV Builder</h4>
+<p class="text-gray-600 mb-4">Create your professional curriculum vitae</p>
+<div class="mb-4">
+<span class="text-sm font-medium text-gray-700">Status:</span> <span class="text-sm font-bold text-green-600" id="currentCVStatus">Not Generated</span>
+</div><button class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold" onclick="showScreen('cvbuilder')">Build CV</button>
+</div>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="dashboard">
+<div class="text-center mb-8">
+<h2 class="text-3xl font-bold text-blue-600 mb-4">Your Dashboard</h2>
+<!--div id="dashboardStats" class="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div class="flex flex-wrap items-center justify-between gap-6">
+            <div class="flex flex-col items-center">
+              <div id="dashboardProfilePicture" class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-2 overflow-hidden border-3 border-blue-200">
+                <span class="text-gray-500 text-xs">No Image</span>
+              </div>
+              <div id="studentLevel" class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+                Beginner
+              </div>
+            </div>
+            <div class="flex-1 min-w-0 text-left">
+              <div class="text-lg font-bold text-blue-600 truncate" id="studentName">
+                -
+              </div>
+              <div class="text-md font-semibold text-green-600 truncate" id="studentSchool">
+                -
+              </div>
+              <div class="text-xs text-gray-600" style="display:none;">School/Institution</div>
+              <div class="text-sm font-medium text-gray-700" id="studentGrade">
+                -
+              </div>
+              <div class="text-xs text-gray-600" style="display:none;">Grade Level</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-purple-600" id="totalMarks">
+                0
+              </div>
+              <div class="text-xs text-gray-600 font-medium">
+                Total Marks
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-yellow-600" id="badgesEarned">
+                0/4
+              </div>
+              <div class="text-xs text-gray-600 font-medium">
+                Badges Earned
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-bold text-gray-700 mb-2">
+                Achievement Badges
+              </div>
+              <div id="achievementBadges" class="flex gap-2 justify-center max-w-xs"></div>
+            </div>
+          </div>
+          </div-->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8" id="dashboardStats">
+<!-- Single row on desktop, stacked on mobile -->
+<div class="grid grid-cols-1 md:grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4">
+<!-- Photo + Level -->
+<div class="flex flex-col items-center md:items-start">
+<div class="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center border-4 border-blue-200" id="dashboardProfilePicture">
+<span class="text-gray-500 text-xs">No Image</span>
+</div>
+<div class="mt-2 text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-1 rounded-full" id="studentLevel">
+        Intermediate
+      </div>
+</div>
+<!-- Name / School / Grade -->
+<div class="min-w-0 text-center md:text-left">
+<div class="text-2xl font-bold text-blue-600 leading-tight truncate" id="studentName">-</div>
+<div class="text-lg font-semibold text-green-600 leading-tight truncate" id="studentSchool">-</div>
+<div class="text-sm text-gray-700 leading-tight" id="studentGrade">-</div>
+</div>
+<!-- Total Marks -->
+<div class="text-center md:text-right whitespace-nowrap">
+<div class="text-2xl font-bold text-blue-600" id="totalMarks">0</div>
+<div class="text-xs text-gray-600 font-medium">Total Marks</div>
+</div>
+<!-- Badges Earned -->
+<div class="text-center md:text-right whitespace-nowrap">
+<div class="text-2xl font-bold text-yellow-600" id="badgesEarned">0/4</div>
+<div class="text-xs text-gray-600 font-medium">Badges Earned</div>
+</div>
+<!-- Achievement Badges -->
+<div class="text-center md:text-right">
+<div class="text-sm font-bold text-gray-700 mb-1 md:mb-1">Achievement Badges</div>
+<div class="flex gap-2 justify-center md:justify-end max-w-xs mx-auto md:mx-0" id="achievementBadges"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+<div class="bg-white rounded-lg shadow-lg p-6 text-center">
+<h3 class="text-xl font-bold mb-4">Discovery Phase</h3>
+<div class="text-4xl mb-4">
+            🎯
+          </div><button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" onclick="showScreen('learning')">Continue Learning</button>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6 text-center">
+<h3 class="text-xl font-bold mb-4">Choose Your Path</h3>
+<div class="text-4xl mb-4">
+            🛤️
+          </div><button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700" onclick="showScreen('pathway')">Select Pathway</button>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-6 text-center">
+<h3 class="text-xl font-bold mb-4">Explore Fields</h3>
+<div class="text-4xl mb-4">
+            🔬
+          </div><button class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700" onclick="showScreen('fields')">Browse Fields</button>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+<h3 class="text-2xl font-bold mb-6 text-center text-blue-600">My Pathway</h3>
+<div class="flex justify-center mb-8">
+<svg class="max-w-full" height="80" viewbox="0 0 400 80" width="400">
+<path d="M20 40 Q100 20 200 40 T380 40" fill="none" stroke="#e5e7eb" stroke-width="3"></path>
+<path d="M20 40 Q100 20 200 40 T380 40" fill="none" id="pathwayVector" stroke="url(#gradient)" stroke-dasharray="0 1000" stroke-width="4" style="transition: stroke-dasharray 2s ease-in-out;">
+<animate attributename="stroke-dasharray" dur="3s" repeatcount="indefinite" values="0 1000;400 1000"></animate>
+</path>
+<defs>
+<lineargradient id="gradient" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1"></stop>
+<stop offset="50%" style="stop-color:#10b981;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1"></stop>
+</lineargradient>
+</defs>
+<circle fill="#f59e0b" r="6">
+<animatemotion dur="3s" repeatcount="indefinite">
+<mpath href="#pathwayVector"></mpath>
+</animatemotion>
+</circle></svg>
+</div>
+<div class="relative" id="pathwayTimeline">
+<div class="text-center py-8" id="timelineDefault">
+<div class="text-6xl mb-4">
+              🗺️
+            </div>
+<h4 class="text-xl font-bold mb-2 text-gray-700">Your Journey Awaits</h4>
+<p class="text-gray-600 mb-6">Select your field and pathway to see your personalized education timeline</p>
+<div class="space-x-4">
+<button class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700" onclick="showScreen('fields')">Choose Field</button> <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700" onclick="showScreen('pathway')">Select Pathway</button>
+</div>
+</div>
+<div class="hidden" id="timelineSteps">
+<div class="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 md:space-x-4">
+<div class="timeline-step flex-1 text-center">
+<div class="timeline-icon w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-blue-500">
+<span class="text-2xl">🏫</span>
+</div>
+<h4 class="font-bold text-blue-600 mb-1" id="step1Title">Current</h4>
+<p class="text-sm text-gray-600" id="step1Desc">Your current education level</p>
+<div class="text-xs text-gray-500 mt-1" id="step1Years">
+                  Now
+                </div>
+</div>
+<div class="hidden md:block text-2xl text-gray-400">
+                →
+              </div>
+<div class="timeline-step flex-1 text-center">
+<div class="timeline-icon w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-green-500">
+<span class="text-2xl">🎓</span>
+</div>
+<h4 class="font-bold text-green-600 mb-1" id="step2Title">TVET</h4>
+<p class="text-sm text-gray-600" id="step2Desc">Technical education</p>
+<div class="text-xs text-gray-500 mt-1" id="step2Years">
+                  3 years
+                </div>
+</div>
+<div class="hidden md:block text-2xl text-gray-400">
+                →
+              </div>
+<div class="timeline-step flex-1 text-center">
+<div class="timeline-icon w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-purple-500">
+<span class="text-2xl" id="step3Icon">🏛️</span>
+</div>
+<h4 class="font-bold text-purple-600 mb-1" id="step3Title">University</h4>
+<p class="text-sm text-gray-600" id="step3Desc">Higher education</p>
+<div class="text-xs text-gray-500 mt-1" id="step3Years">
+                  4-8 years
+                </div>
+</div>
+<div class="hidden md:block text-2xl text-gray-400">
+                →
+              </div>
+<div class="timeline-step flex-1 text-center">
+<div class="timeline-icon w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-yellow-500">
+<span class="text-2xl">💼</span>
+</div>
+<h4 class="font-bold text-yellow-600 mb-1" id="step4Title">Career</h4>
+<p class="text-sm text-gray-600" id="step4Desc">Professional work</p>
+<div class="text-xs text-gray-500 mt-1" id="step4Years">
+                  Lifelong
+                </div>
+</div>
+</div>
+<div class="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+<div class="text-center">
+<h5 class="font-bold text-lg mb-2">Your <span id="pathwaySummaryType">Academic</span> Journey</h5>
+<p class="text-gray-700" id="pathwaySummary">Complete your pathway to become a professional in your chosen field</p>
+<div class="mt-4 flex justify-center space-x-4 text-sm">
+<div class="bg-white px-3 py-1 rounded-full border">
+<span class="font-medium">Field:</span> <span class="text-blue-600" id="summaryField">Not Selected</span>
+</div>
+<div class="bg-white px-3 py-1 rounded-full border">
+<span class="font-medium">Pathway:</span> <span class="text-green-600" id="summaryPathway">Not Selected</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 p-6 bg-white rounded-lg border border-gray-200 shadow-sm hidden" id="tvetmaraPrograms">
+<div class="text-center mb-6">
+<h5 class="font-bold text-xl text-blue-600 mb-2">🎓 TVETMARA Programs Available</h5>
+<p class="text-gray-600">Programs offered for your selected field</p>
+</div>
+<div class="space-y-4" id="programsList"></div>
+<div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+<div class="flex items-center justify-center space-x-3">
+<div class="text-2xl">
+                    💡
+                  </div>
+<div class="text-center">
+<p class="text-sm text-blue-700 font-medium">Ready to apply? Visit the official TVETMARA website for admission requirements and application procedures.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text-center mb-8">
+<button class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg hover:from-blue-700 hover:to-purple-700 font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300" id="exploreSkillsBtn" onclick="toggleSkillsExploration()"><span class="flex items-center justify-center"><span class="text-2xl mr-3">🚀</span> Explore Recommended Skills and Opportunities <span class="ml-3 transform transition-transform duration-300" id="exploreArrow">▼</span></span></button>
+</div>
+<div class="hidden" id="skillsExplorationSection">
+<div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl shadow-lg p-8 mb-8 border border-blue-200">
+<div class="text-center mb-8">
+<div class="text-6xl mb-4" id="explorationFieldIcon">
+              🔬
+            </div>
+<h3 class="text-3xl font-bold text-blue-700 mb-2" id="explorationFieldName">Select a Field First</h3>
+<p class="text-gray-600">Choose your field to see personalized skills and opportunities</p>
+</div>
+<div class="hidden" id="skillsOpportunitiesContent">
+<div class="grid lg:grid-cols-2 gap-8 mb-8">
+<div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+<div class="flex items-center mb-4">
+<span class="text-3xl mr-3">💪</span>
+<h4 class="text-xl font-bold text-green-700">Current Essential Skills</h4>
+</div>
+<p class="text-sm text-gray-600 mb-4">Skills that are currently in high demand in the industry</p>
+<div class="space-y-2" id="currentSkillsList"></div>
+</div>
+<div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+<div class="flex items-center mb-4">
+<span class="text-3xl mr-3">🔮</span>
+<h4 class="text-xl font-bold text-blue-700">Future Trend Skills</h4>
+</div>
+<p class="text-sm text-gray-600 mb-4">Emerging skills that will be crucial in the next 5-10 years</p>
+<div class="space-y-2" id="futureSkillsList"></div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500 mb-8">
+<div class="flex items-center mb-4">
+<span class="text-3xl mr-3">🔥</span>
+<h4 class="text-xl font-bold text-orange-700">High Demand Skills</h4>
+</div>
+<p class="text-sm text-gray-600 mb-4">Skills with the highest market demand and salary potential</p>
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3" id="demandSkillsList"></div>
+</div>
+<div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+<div class="flex items-center mb-6">
+<span class="text-3xl mr-3">🏢</span>
+<h4 class="text-xl font-bold text-purple-700">Career Opportunities</h4>
+</div>
+<div class="grid lg:grid-cols-3 gap-6">
+<div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-5">
+<div class="flex items-center mb-3">
+<span class="text-2xl mr-2">🌱</span>
+<h5 class="font-bold text-green-700">Entry Level (0-2 years)</h5>
+</div>
+<div class="space-y-2" id="entryLevelJobs"></div>
+</div>
+<div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-5">
+<div class="flex items-center mb-3">
+<span class="text-2xl mr-2">⚡</span>
+<h5 class="font-bold text-blue-700">Mid Level (3-7 years)</h5>
+</div>
+<div class="space-y-2" id="midLevelJobs"></div>
+</div>
+<div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-5">
+<div class="flex items-center mb-3">
+<span class="text-2xl mr-2">👑</span>
+<h5 class="font-bold text-purple-700">Senior Level (8+ years)</h5>
+</div>
+<div class="space-y-2" id="seniorLevelJobs"></div>
+</div>
+</div>
+</div>
+<div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg p-6">
+<div class="flex items-center mb-4">
+<span class="text-3xl mr-3">📊</span>
+<h4 class="text-xl font-bold">Industry Insights</h4>
+</div>
+<div class="grid md:grid-cols-3 gap-6">
+<div class="text-center">
+<div class="text-2xl font-bold mb-1" id="salaryRange">
+                    RM 2,500 - 8,000
+                  </div>
+<div class="text-sm opacity-90">
+                    Average Salary Range
+                  </div>
+</div>
+<div class="text-center">
+<div class="text-2xl font-bold mb-1" id="jobGrowth">
+                    +15%
+                  </div>
+<div class="text-sm opacity-90">
+                    Job Growth (5 years)
+                  </div>
+</div>
+<div class="text-center">
+<div class="text-2xl font-bold mb-1" id="topEmployers">
+                    500+
+                  </div>
+<div class="text-sm opacity-90">
+                    Companies Hiring
+                  </div>
+</div>
+</div>
+</div>
+</div>
+<div class="text-center py-8" id="noFieldMessage">
+<div class="text-6xl mb-4">
+              🎯
+            </div>
+<h4 class="text-xl font-bold mb-4 text-gray-700">Choose Your Field First</h4>
+<p class="text-gray-600 mb-6">Select your preferred field to unlock personalized skills recommendations and career opportunities</p><button class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 font-semibold" onclick="showScreen('fields')">Choose Field Now</button>
+</div>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="fields">
+<h2 class="text-3xl font-bold mb-8 text-blue-600 text-center">Choose Your Most Preferred Field</h2>
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="fieldsGrid"></div>
+</div>
+<div class="screen hidden" id="pathway">
+<h2 class="text-3xl font-bold mb-8 text-blue-600 text-center">Choose Your Pathway</h2>
+<div class="grid md:grid-cols-3 gap-8" id="pathwayGrid">
+<div class="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300" id="pathway-card-Academic">
+<div class="text-6xl mb-4">
+            🎓
+          </div>
+<h3 class="text-2xl font-bold mb-4">Academic</h3>
+<div class="text-left mb-6 space-y-3">
+<p class="text-gray-600 text-sm"><strong>Focus:</strong> Research, higher education, and academic excellence</p>
+<p class="text-gray-600 text-sm"><strong>Path:</strong> Diploma → Degree → Master's → PhD</p>
+<p class="text-gray-600 text-sm"><strong>Opportunities:</strong> University lecturer, researcher, academic consultant, R&amp;D specialist</p>
+<p class="text-gray-600 text-sm"><strong>Skills:</strong> Critical thinking, research methodology, academic writing, data analysis</p>
+</div><button class="w-full bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold mb-3" id="btn-Academic" onclick="selectPathway('Academic')">Choose Academic</button> <button class="w-full bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold hidden" id="continue-Academic" onclick="continueFromPathway()">Continue</button>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300" id="pathway-card-Career">
+<div class="text-6xl mb-4">
+            💼
+          </div>
+<h3 class="text-2xl font-bold mb-4">Career</h3>
+<div class="text-left mb-6 space-y-3">
+<p class="text-gray-600 text-sm"><strong>Focus:</strong> Industry expertise and professional development</p>
+<p class="text-gray-600 text-sm"><strong>Path:</strong> Entry-level → Specialist → Senior → Manager → Executive</p>
+<p class="text-gray-600 text-sm"><strong>Opportunities:</strong> Technical specialist, project manager, department head, industry expert</p>
+<p class="text-gray-600 text-sm"><strong>Skills:</strong> Technical expertise, leadership, project management, industry knowledge</p>
+</div><button class="w-full bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold mb-3" id="btn-Career" onclick="selectPathway('Career')">Choose Career</button> <button class="w-full bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold hidden" id="continue-Career" onclick="continueFromPathway()">Continue</button>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300" id="pathway-card-Entrepreneur">
+<div class="text-6xl mb-4">
+            🚀
+          </div>
+<h3 class="text-2xl font-bold mb-4">Entrepreneur</h3>
+<div class="text-left mb-6 space-y-3">
+<p class="text-gray-600 text-sm"><strong>Focus:</strong> Innovation, business creation, and market disruption</p>
+<p class="text-gray-600 text-sm"><strong>Path:</strong> Startup → Growth → Scale → Exit/Expansion</p>
+<p class="text-gray-600 text-sm"><strong>Opportunities:</strong> Business owner, startup founder, innovation consultant, venture capitalist</p>
+<p class="text-gray-600 text-sm"><strong>Skills:</strong> Business planning, risk management, innovation, networking, financial literacy</p>
+</div><button class="w-full bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 font-semibold mb-3" id="btn-Entrepreneur" onclick="selectPathway('Entrepreneur')">Choose Entrepreneur</button> <button class="w-full bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 font-semibold hidden" id="continue-Entrepreneur" onclick="continueFromPathway()">Continue</button>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="skills">
+<h2 class="text-3xl font-bold mb-8 text-blue-600 text-center">Recommended Skills</h2>
+<div class="bg-white rounded-lg shadow-lg p-8">
+<div id="skillsContent">
+<p class="text-center text-gray-600">Select a field in your profile to see recommended skills and certifications.</p>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="goals">
+<div class="max-w-4xl mx-auto">
+<div class="text-center mb-8">
+<h2 class="text-3xl font-bold text-blue-600 mb-4">Set Your Goals</h2>
+<p class="text-gray-600">Define your academic pathway and career targets</p>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-8">
+<div class="mb-8">
+<h3 class="text-xl font-bold mb-4">Academic Target (Pathway)</h3><label class="block text-sm font-medium mb-2">Highest Target</label> <select class="w-full p-3 border rounded-lg" id="goalsAcademicTarget">
+<option value="">
+                Select your highest academic target
+              </option>
+<option value="Diploma">
+                Diploma
+              </option>
+<option value="Degree">
+                Degree
+              </option>
+<option value="Master">
+                Master
+              </option>
+<option value="PhD">
+                PhD
+              </option>
+<option value="Professional Cert">
+                Professional Certification
+              </option>
+</select>
+</div>
+<div class="mb-8">
+<h3 class="text-xl font-bold mb-4">Time Horizon</h3>
+<p class="text-sm text-gray-600 mb-4">Choose your target timeframe</p>
+<div class="grid md:grid-cols-2 gap-6">
+<div class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-300 transition-colors" id="fiveYearCard" onclick="selectTimeHorizon('5')">
+<div class="text-center">
+<div class="text-3xl mb-2">
+                    ⚡
+                  </div>
+<h4 class="text-lg font-bold">5 Years Target</h4>
+<p class="text-sm text-gray-600">Short-Term Goals</p>
+</div>
+</div>
+<div class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-300 transition-colors" id="tenYearCard" onclick="selectTimeHorizon('10')">
+<div class="text-center">
+<div class="text-3xl mb-2">
+                    🚀
+                  </div>
+<h4 class="text-lg font-bold">10 Years Target</h4>
+<p class="text-sm text-gray-600">Long-Term Goals</p>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden" id="goalsPreview">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold">Your Goals Preview</h3>
+<div class="space-x-2">
+<button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm font-semibold" id="editGoalsBtn" onclick="editPrefilledGoals()">Edit Goals</button> <button class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm font-semibold" id="clearGoalsBtn" onclick="clearAndCustomizeGoals()">Clear &amp; Write Your Own</button>
+</div>
+</div>
+<div class="bg-gray-50 rounded-lg p-6">
+<div id="goalsContent"></div>
+</div>
+</div>
+<div class="hidden" id="editGoalsSection">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold">Edit Your Goals</h3>
+<div class="space-x-2">
+<button class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold" onclick="previewEditedGoals()">Preview Changes</button> <button class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 text-sm font-semibold" onclick="cancelEditGoals()">Cancel</button>
+</div>
+</div>
+<div class="bg-gray-50 rounded-lg p-6 space-y-6">
+<div>
+<label class="block text-sm font-medium mb-2">Career Vision</label>
+<textarea class="w-full p-3 border border-gray-300 rounded-lg h-20 resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="editCareerVision" placeholder="Describe your career vision..."></textarea>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Key Milestones</label>
+<textarea class="w-full p-3 border border-gray-300 rounded-lg h-32 resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="editKeyMilestones" placeholder="List your key milestones (one per line)..."></textarea>
+<p class="text-sm text-gray-600 mt-1">💡 Tip: Write each milestone on a separate line</p>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Target Position</label> <input class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="editTargetPosition" placeholder="Your target position..." type="text"/>
+</div>
+<div class="hidden" id="editLeadershipGoalsDiv">
+<label class="block text-sm font-medium mb-2">Leadership Goals</label>
+<textarea class="w-full p-3 border border-gray-300 rounded-lg h-20 resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="editLeadershipGoals" placeholder="Describe your leadership goals..."></textarea>
+</div>
+</div>
+</div>
+<div class="hidden" id="customGoalsSection">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold">Write Your Custom Goals</h3>
+<div class="space-x-2">
+<button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm font-semibold" onclick="usePrefilledGoals()">Use Pre-filled Goals</button> <button class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold" onclick="previewCustomGoals()">Preview Custom Goals</button>
+</div>
+</div>
+<div class="bg-gray-50 rounded-lg p-6">
+<textarea class="w-full h-96 p-4 border border-gray-300 rounded-lg resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="customGoalsTextarea" placeholder="Write your personalized goals here... You can include: • Your academic targets and timeline • Career vision and aspirations • Key milestones you want to achieve • Skills you want to develop • Leadership goals and impact you want to make • Any other personal or professional objectives Feel free to structure this however works best for you!"></textarea>
+<p class="text-sm text-gray-600 mt-2">💡 Tip: Be specific about your goals and include timelines where possible. You can always edit these later!</p>
+</div>
+</div>
+<div class="hidden" id="customGoalsPreview">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold">Your Custom Goals Preview</h3><button class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 text-sm font-semibold" onclick="editCustomGoals()">Edit Goals</button>
+</div>
+<div class="bg-gray-50 rounded-lg p-6">
+<div class="whitespace-pre-line" id="customGoalsContent"></div>
+</div>
+</div>
+<div class="mt-8 text-center space-x-4">
+<button class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600" onclick="showScreen('learning')">Back to Learning</button> <button class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold" disabled="" id="saveGoalsBtn" onclick="saveGoals()">Save Goals</button>
+</div>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="cvbuilder">
+<div class="max-w-4xl mx-auto">
+<div class="text-center mb-8">
+<h2 class="text-3xl font-bold text-green-600 mb-4">CV Builder</h2>
+<p class="text-gray-600 mb-4">Create your professional curriculum vitae</p>
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-3xl mx-auto">
+<div class="flex items-start space-x-3">
+<div class="text-2xl">
+                💡
+              </div>
+<div class="text-left">
+<h3 class="font-bold text-blue-800 mb-2">Instructions</h3>
+<p class="text-blue-700 text-sm leading-relaxed"><strong>Imagine yourself 5-10 years from now!</strong> Fill out this CV as if you have already graduated from your chosen field, earned relevant certifications, developed professional skills, and gained meaningful work experience. Think about the achievements, projects, and expertise you would have by then. This exercise will help you visualize your future career path and set clear goals for your professional development.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-8">
+<div class="space-y-8">
+<div>
+<h3 class="text-xl font-bold mb-4 text-blue-600">Personal Information</h3>
+<div class="mb-6 text-center">
+<label class="block text-sm font-medium mb-2">Profile Picture</label>
+<div class="flex flex-col items-center">
+<div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-3 overflow-hidden" id="profilePicturePreview">
+<span class="text-gray-500 text-sm">No Image</span>
+</div><input accept="image/*" class="hidden" id="cvProfilePicture" onchange="handleProfilePictureUpload(this)" type="file"/> <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm" onclick="document.getElementById('cvProfilePicture').click()" type="button">Upload Photo</button>
+<p class="text-xs text-gray-500 mt-1">Recommended: Square image, max 2MB</p>
+</div>
+</div>
+<div class="grid md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium mb-2">Full Name</label> <input class="w-full p-3 border rounded-lg" id="cvFullName" readonly="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Email</label> <input class="w-full p-3 border rounded-lg" id="cvEmail" readonly="" type="email"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Phone Number</label> <input class="w-full p-3 border rounded-lg" id="cvPhone" placeholder="e.g., +60 12-345 6789" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Location</label> <input class="w-full p-3 border rounded-lg" id="cvLocation" placeholder="e.g., Kuala Lumpur, Malaysia" type="text"/>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 text-blue-600">Professional Summary</h3>
+<textarea class="w-full p-3 border rounded-lg h-24" id="cvSummary" placeholder="Write 2-3 sentences about yourself and your career goals"></textarea>
+<div class="mt-2 flex items-center gap-2">
+<button class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm" id="regenSummaryBtn" type="button">Regenerate from Goals/Pathway</button>
+<span class="text-xs text-gray-500">Won't overwrite unless you click</span>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold text-blue-600">Education</h3><button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-semibold" onclick="addEducationEntry()" type="button">+ Add Education</button>
+</div>
+<div class="space-y-4" id="educationEntries"></div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 text-blue-600">Skills</h3>
+<div class="mb-6">
+<label class="block text-sm font-medium mb-2">Technical Skills</label>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3" id="technicalSkillsOptions"></div>
+<div class="flex gap-2 mb-2">
+<input class="flex-1 p-2 border rounded-lg text-sm" id="customTechnicalSkill" placeholder="Add custom technical skill..." type="text"/> <button class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 text-sm" onclick="addCustomSkill('technical')" type="button">Add</button>
+</div>
+<div class="flex flex-wrap gap-2" id="selectedTechnicalSkills"></div>
+</div>
+<div class="mb-6">
+<label class="block text-sm font-medium mb-2">Soft Skills</label>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3" id="softSkillsOptions"></div>
+<div class="flex gap-2 mb-2">
+<input class="flex-1 p-2 border rounded-lg text-sm" id="customSoftSkill" placeholder="Add custom soft skill..." type="text"/> <button class="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 text-sm" onclick="addCustomSkill('soft')" type="button">Add</button>
+</div>
+<div class="flex flex-wrap gap-2" id="selectedSoftSkills"></div>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Languages</label>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3" id="languageOptions">
+<label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 language-option" type="checkbox" value="English"/> English</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 language-option" type="checkbox" value="Bahasa Malaysia"/> Bahasa Malaysia</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 language-option" type="checkbox" value="Mandarin"/> Mandarin</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 language-option" type="checkbox" value="Tamil"/> Tamil</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 language-option" type="checkbox" value="Japanese"/> Japanese</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 language-option" type="checkbox" value="Korean"/> Korean</label>
+</div>
+<div class="flex gap-2 mb-2">
+<input class="flex-1 p-2 border rounded-lg text-sm" id="customLanguage" placeholder="Add custom language..." type="text"/> <button class="bg-purple-500 text-white px-3 py-2 rounded-lg hover:bg-purple-600 text-sm" onclick="addCustomSkill('language')" type="button">Add</button>
+</div>
+<div class="flex flex-wrap gap-2" id="selectedLanguages"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold text-blue-600">Experience</h3><button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-semibold" onclick="addExperienceEntry()" type="button">+ Add Experience</button>
+</div>
+<div class="space-y-4" id="experienceEntries"></div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 text-blue-600">Achievements &amp; Awards</h3>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-2">Academic Awards</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3" id="academicAwardsOptions">
+<label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Dean's List"/> Dean's List</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Honor Roll"/> Honor Roll</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Academic Excellence Award"/> Academic Excellence Award</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Best Student Award"/> Best Student Award</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Perfect Attendance"/> Perfect Attendance</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Scholarship Recipient"/> Scholarship Recipient</label>
+</div>
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-2">Competition Awards</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3" id="competitionAwardsOptions">
+<label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Innovation Competition Winner"/> Innovation Competition Winner</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Hackathon Participant"/> Hackathon Participant</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Science Fair Winner"/> Science Fair Winner</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Sports Competition Medal"/> Sports Competition Medal</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Debate Competition Winner"/> Debate Competition Winner</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 achievement-option" type="checkbox" value="Robotics Competition"/> Robotics Competition</label>
+</div>
+</div>
+<div class="flex gap-2 mb-2">
+<input class="flex-1 p-2 border rounded-lg text-sm" id="customAchievement" placeholder="Add custom achievement..." type="text"/> <button class="bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 text-sm" onclick="addCustomSkill('achievement')" type="button">Add</button>
+</div>
+<div class="flex flex-wrap gap-2" id="selectedAchievements"></div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 text-blue-600">Extracurricular Activities</h3>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-2">Clubs &amp; Associations</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3" id="clubsOptions">
+<label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Student Council"/> Student Council</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Engineering Society"/> Engineering Society</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Robotics Club"/> Robotics Club</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Debate Club"/> Debate Club</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Environmental Club"/> Environmental Club</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Photography Club"/> Photography Club</label>
+</div>
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-2">Community Work &amp; Volunteer</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3" id="volunteerOptions">
+<label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Community Service Volunteer"/> Community Service Volunteer</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Environmental Conservation"/> Environmental Conservation</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Youth Mentor"/> Youth Mentor</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Charity Event Organizer"/> Charity Event Organizer</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Blood Donation Drive"/> Blood Donation Drive</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Teaching Assistant"/> Teaching Assistant</label>
+</div>
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-2">Leadership Roles</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3" id="leadershipOptions">
+<label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Club President"/> Club President</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Vice President"/> Vice President</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Secretary"/> Secretary</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Event Coordinator"/> Event Coordinator</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Team Captain"/> Team Captain</label> <label class="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50"><input class="mr-2 extracurricular-option" type="checkbox" value="Project Leader"/> Project Leader</label>
+</div>
+</div>
+<div class="flex gap-2 mb-2">
+<input class="flex-1 p-2 border rounded-lg text-sm" id="customExtracurricular" placeholder="Add custom activity..." type="text"/> <button class="bg-indigo-500 text-white px-3 py-2 rounded-lg hover:bg-indigo-600 text-sm" onclick="addCustomSkill('extracurricular')" type="button">Add</button>
+</div>
+<div class="flex flex-wrap gap-2" id="selectedExtracurriculars"></div>
+</div>
+</div>
+<div class="mt-8 text-center space-x-4">
+<button class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600" onclick="showScreen('learning')">Back to Learning</button> <button class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700" onclick="previewCV()">Preview CV</button> <button class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold" onclick="saveCV()">Save CV</button>
+</div>
+</div>
+</div>
+</div>
+<div class="screen hidden" id="passport">
+<div class="max-w-4xl mx-auto">
+<div class="text-center mb-8 no-print">
+<button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700" onclick="window.print()">Print/Download Passport</button>
+</div>
+<div class="bg-white rounded-lg shadow-lg p-8 print:shadow-none">
+<div class="text-center mb-8">
+<h1 class="text-4xl font-bold text-blue-600 mb-2">Congratulations!</h1>
+<h2 class="text-2xl font-semibold text-gray-700">You are NextGEN TVETMARA</h2>
+</div>
+<div class="grid md:grid-cols-2 gap-8">
+<div>
+<h3 class="text-xl font-bold mb-4 text-blue-600">Student Information</h3>
+<div class="space-y-2">
+<p><strong>Name:</strong> <span id="passportName">-</span></p>
+<p><strong>Email:</strong> <span id="passportEmail">-</span></p>
+<p><strong>School:</strong> <span id="passportSchool">-</span></p>
+<p><strong>Grade:</strong> <span id="passportGrade">-</span></p>
+</div>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-4 text-blue-600">Achievements</h3>
+<div class="space-y-2">
+<p><strong>Field:</strong> <span id="passportField">-</span></p>
+<p><strong>Pathway:</strong> <span id="passportPathway">-</span></p>
+<p><strong>Badges Earned:</strong> <span id="passportBadges">0/3</span></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" id="missionModal">
+<div class="bg-white rounded-lg p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+<h3 class="text-2xl font-bold mb-6 text-center" id="missionTitle"></h3>
+<div id="missionContent"></div>
+<div class="hidden text-center" id="quizResult">
+<div class="text-6xl mb-4" id="resultIcon"></div>
+<h3 class="text-2xl font-bold mb-4" id="resultTitle"></h3>
+<div class="mb-6">
+<div class="text-lg font-semibold">
+              Your Score: <span id="finalScore"></span>
+</div>
+</div>
+<div class="space-x-4" id="resultButtons"></div>
+</div>
+<div class="mt-6 flex justify-between" id="quizNavigation">
+<button class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="prevBtn" onclick="previousQuestion()">Previous</button> <button class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600" onclick="closeMission()">Cancel</button> <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="nextBtn" onclick="nextQuestion()">Next</button>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" id="careerQuizModal">
+<div class="bg-white rounded-lg p-8 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+<h3 class="text-2xl font-bold mb-6 text-center text-teal-600" id="careerQuizTitle">🧭 Career Explorer Quiz</h3>
+<div id="careerQuizContent"></div>
+<div class="hidden text-center" id="careerQuizResult">
+<div class="text-6xl mb-4">
+            🎯
+          </div>
+<h3 class="text-2xl font-bold mb-4 text-green-600">Your Perfect Match!</h3>
+<div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-8 mb-6">
+<div class="text-center mb-6" id="matchedField">
+<div class="text-6xl mb-4" id="fieldIcon"></div>
+<h4 class="text-2xl font-bold text-green-700 mb-2" id="fieldName"></h4>
+<p class="text-gray-600 mb-4" id="fieldDescription"></p>
+</div>
+<div class="grid md:grid-cols-2 gap-6 text-left">
+<div>
+<h5 class="font-bold text-blue-600 mb-2">🏫 TVETMARA Institution:</h5>
+<p class="text-gray-700 mb-4" id="fieldInstitution"></p>
+<h5 class="font-bold text-purple-600 mb-2">🎯 Key Skills:</h5>
+<ul class="text-gray-700 text-sm space-y-1" id="fieldSkills"></ul>
+</div>
+<div>
+<h5 class="font-bold text-orange-600 mb-2">🏢 Career Opportunities:</h5>
+<ul class="text-gray-700 text-sm space-y-1" id="fieldCompanies"></ul>
+</div>
+</div>
+</div>
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+<div class="flex items-center justify-center space-x-3">
+<div class="text-3xl">
+                🏆
+              </div>
+<div class="text-center">
+<h5 class="font-bold text-yellow-700">Congratulations!</h5>
+<p class="text-sm text-yellow-600">You've earned the Explorer Badge! 🧭</p>
+</div>
+</div>
+</div>
+<div class="space-x-4">
+<button class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold" id="addToFavoritesBtn" onclick="addFieldToFavorites()">Add to Favorites</button> <button class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold" onclick="retakeCareerQuiz()">Retake Quiz</button> <button class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 font-semibold" onclick="closeCareerQuiz()">Close</button>
+</div>
+</div>
+<div class="mt-6 flex justify-between" id="careerQuizNavigation">
+<button class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="careerPrevBtn" onclick="previousCareerQuestion()">Previous</button> <button class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600" onclick="closeCareerQuiz()">Cancel</button> <button class="bg-teal-600 text-white px-6 py-2 rounded hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="careerNextBtn" onclick="nextCareerQuestion()">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Drawer + Overlay -->
+<div class="hidden fixed inset-0 bg-black/40 z-[60]" id="drawerOverlay"></div>
+<aside class="fixed top-0 left-0 h-full w-64 bg-white z-[70] shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out will-change-transform" id="drawer">
+<div class="p-4 border-b flex items-center justify-between">
+<div class="flex items-center gap-2">
+<img alt="NextGEN" class="w-8 h-8 object-contain" src="https://i.postimg.cc/vmHr5DnS/NEXT-GEN.png"/>
+<span class="font-semibold">Menu</span>
+</div>
+<button aria-label="Close menu" class="p-2 rounded hover:bg-gray-100" id="drawerClose">×</button>
+</div>
+<nav class="p-2">
+<button class="w-full text-left px-4 py-3 rounded hover:bg-gray-100" data-target="dashboard">Dashboard</button>
+<button class="w-full text-left px-4 py-3 rounded hover:bg-gray-100" data-target="profile">Profile</button>
+<button class="w-full text-left px-4 py-3 rounded hover:bg-gray-100" data-target="learning">Learning</button>
+<button class="w-full text-left px-4 py-3 rounded hover:bg-gray-100" data-menu="goals" data-target="goals" onclick="showScreen('goals')">Goals</button>
+<button class="w-full text-left px-4 py-3 rounded hover:bg-gray-100" data-menu="cvbuilder" data-target="cvbuilder" onclick="showScreen('cvbuilder')">CV Builder</button>
+<button class="w-full text-left px-4 py-3 rounded hover:bg-gray-100" data-menu="passport" data-target="passport" onclick="showScreen('passport')">Passport</button>
+</nav>
+</aside>
+<!--script>
+(function(){
+  // --- Konfigurasi badges (ikut link yang Asiq bagi) ---
+  const BADGES = [
+    {key:'advanced',     label:'Advanced',     src:'https://i.postimg.cc/jSdYB8vC/3.png'},
+    {key:'intermediate', label:'Intermediate', src:'https://i.postimg.cc/Zn8hz21v/2.png'},
+    {key:'beginner',     label:'Beginner',     src:'https://i.postimg.cc/N0FY2NrZ/1.png'},
+    {key:'explorer',     label:'Explorer',     src:null}
+  ];
+
+  // --- Util ---
+  function getName(){
+    try{
+      if (window.state?.profile?.name) return state.profile.name;
+      if (window.state?.auth?.name)    return state.auth.name;
+      const rn = localStorage.getItem('regName'); if (rn) return rn;
+      const em = state?.profile?.email || localStorage.getItem('regEmail') || '';
+      if (em.includes('@')) return em.split('@')[0];
+    }catch(e){}
+    return '-';
+  }
+  function normalizeList(x){
+    if (!x) return [];
+    if (Array.isArray(x)) return x;
+    if (typeof x === 'string') return x.split(',').map(s=>s.trim()).filter(Boolean);
+    return [];
+  }
+  function chip(txt, cls){
+    const s=document.createElement('span');
+    s.className=cls||'px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs border';
+    s.textContent=txt; return s;
+  }
+  function getFieldObj(){
+    const fk = state?.profile?.field || '';
+    const fd = window.fieldsData || {};
+    if (fk && fd[fk]) return fd[fk];
+    const byName = Object.values(fd).find(x => (x?.name||'').toLowerCase()===(fk||'').toLowerCase());
+    return byName||null;
+  }
+
+  // --- Programs (auto dari fieldsData; ada fallback minima untuk beberapa field) ---
+  function fillPrograms(field){
+    // buat seksyen jika belum wujud
+    let list = document.getElementById('passportPrograms');
+    if (!list){
+      const container = document.querySelector('#passport .bg-white.rounded-xl.shadow.p-5'); // kad TVETMARA
+      if (container){
+        const sec = document.createElement('section');
+        sec.className = 'md:col-span-2 bg-white rounded-xl shadow p-5 mt-6';
+        sec.innerHTML = `
+          <div class="flex items-center gap-2 mb-3">
+            <div class="px-2 py-1 rounded-full text-xs bg-purple-50 text-purple-700 border border-purple-200">Programs</div>
+            <h3 class="text-lg font-semibold">Senarai Program TVETMARA</h3>
+          </div>
+          <ul id="passportPrograms" class="list-disc list-inside text-sm text-gray-700"></ul>`;
+        // letak selepas kad TVETMARA
+        container.parentElement.appendChild(sec);
+        list = sec.querySelector('#passportPrograms');
+      }
+    }
+    if (!list) return;
+
+    list.innerHTML='';
+    let progs = normalizeList(
+      field?.programs || field?.programmes || field?.courses || field?.courseList || field?.program
+    );
+
+    // fallback contoh (boleh tambah ikut keperluan)
+    if (!progs.length && field?.name){
+      const nm = field.name.toLowerCase();
+      const defaults = {
+        'built environment': ['Diploma Teknologi Bangunan','Diploma Kejuruteraan Senibina','Diploma Pengurusan Fasiliti'],
+        'biomedical': ['Diploma Teknologi Perubatan','Diploma Instrumentasi Bioperubatan']
+      };
+      for (const k in defaults) if (nm.includes(k)) { progs = defaults[k]; break; }
+    }
+
+    if (!progs.length){
+      const li=document.createElement('li');
+      li.textContent='Tiada program disenaraikan untuk bidang ini buat masa ini.';
+      li.className='text-gray-500'; list.appendChild(li); return;
+    }
+    progs.slice(0,15).forEach(p=>{ const li=document.createElement('li'); li.textContent=p; list.appendChild(li); });
+  }
+
+  // --- Badges (gambar) ---
+  function renderBadges(){
+    const grid = document.getElementById('badgeGrid'); if (!grid) return;
+    grid.innerHTML='';
+    const earned = {
+      beginner: !!(state?.missions?.s1 && state.missions.s1.every(Boolean)),
+      intermediate: !!(state?.missions?.s2 && state.missions.s2.every(Boolean)),
+      advanced: !!(state?.missions?.goalsSaved && state?.missions?.cvBuilt),
+      explorer: !!state?.missions?.explorerCompleted
+    };
+    let count=0;
+    BADGES.forEach(b=>{
+      const got = !!earned[b.key]; if (got) count++;
+      const card=document.createElement('div');
+      card.className='rounded-lg border p-3 text-center '+(got?'bg-green-50 border-green-200':'bg-gray-50 border-gray-200 opacity-70');
+      const box=document.createElement('div');
+
+      if (b.src){
+        const img=document.createElement('img');
+        img.src=b.src; img.alt=b.label;
+        img.className='mx-auto w-14 h-14 object-contain mb-1';
+        if (!got) img.style.filter='grayscale(100%)';
+        box.appendChild(img);
+      } else {
+        const ico=document.createElement('div'); ico.className='text-3xl mb-1'; ico.textContent='🧭'; box.appendChild(ico);
+      }
+
+      const title=document.createElement('div'); title.className='text-sm font-medium'; title.textContent=b.label; box.appendChild(title);
+      const status=document.createElement('div'); status.className='text-[11px] mt-1 '+(got?'text-green-700':'text-gray-500'); status.textContent=got?'Unlocked':'Locked'; box.appendChild(status);
+
+      card.appendChild(box); grid.appendChild(card);
+    });
+    const badgeText=document.getElementById('passportBadges'); if (badgeText) badgeText.textContent = count+' / 4';
+  }
+
+  // --- Updater utama Passport ---
+  function updatePassportSmart(){
+    // Nama (hero + header)
+    const nm = getName();
+    const pn = document.getElementById('passportName'); if (pn) pn.textContent = nm;
+    const hn = document.getElementById('headerRegName'); if (hn) hn.textContent = nm;
+
+    // Field-specific chips
+    const f = getFieldObj();
+    const instEl=document.getElementById('passportInstitutions');
+    const compEl=document.getElementById('passportCompanies');
+    const skillsEl=document.getElementById('passportSkills');
+    if (instEl) instEl.innerHTML=''; if (compEl) compEl.innerHTML=''; if (skillsEl) skillsEl.innerHTML='';
+
+    if (f){
+      normalizeList(f.institutions || f.institution).slice(0,8).forEach(x=>instEl?.appendChild(chip(x)));
+      normalizeList(f.companies || f.topCompanies || f.company).slice(0,6).forEach(x=>{
+        const li=document.createElement('li'); li.textContent=x; compEl?.appendChild(li);
+      });
+      normalizeList(f.skills || f.coreSkills).slice(0,10).forEach(x=>skillsEl?.appendChild(chip(x,'px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200')));
+      // field pill & icon
+      const iconEl=document.getElementById('passportFieldIcon'); if (iconEl) iconEl.textContent = f.icon || '🎓';
+      const fieldNameEl=document.getElementById('passportFieldName'); if (fieldNameEl) fieldNameEl.textContent = f.name || '-';
+      const pillEl=document.getElementById('passportFieldPill'); if (pillEl) pillEl.textContent = f.name || 'Field';
+      // programs
+      fillPrograms(f);
+    }
+    renderBadges();
+  }
+
+  // --- Pastikan data siap dulu ---
+  function waitForData(cb, tries=40){
+    if ((window.fieldsData && window.state) || tries<=0) { cb(); return; }
+    setTimeout(()=>waitForData(cb, tries-1), 200);
+  }
+
+  // Run bila Passport visible
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const p=document.getElementById('passport');
+    if (p && !p.classList.contains('hidden')) waitForData(updatePassportSmart);
+  });
+  const pe=document.getElementById('passport');
+  if (pe){
+    const o=new MutationObserver(()=>{ if (!pe.classList.contains('hidden')) waitForData(updatePassportSmart); });
+    o.observe(pe,{attributes:true, attributeFilter:['class']});
+  }
+
+  // expose (jika nak panggil sendiri)
+  window.updatePassportSmart = ()=>waitForData(updatePassportSmart);
+})();
+</script-->
+<!-- ===== Footer Menu (appears after login) ===== -->
+<nav class="no-print fixed bottom-0 inset-x-0 bg-white border-t shadow-lg hidden z-40" id="footerNav">
+<div class="mx-auto max-w-4xl grid grid-cols-5 text-xs text-gray-600">
+<button class="footer-link flex flex-col items-center py-2 hover:text-blue-600" data-target="learning">
+<!-- Learning Icon -->
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6v12m0-12a4 4 0 0 0-4-4H5a2 2 0 0 0-2 2v13h5a4 4 0 0 1 4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Learning</span>
+</button>
+<button class="footer-link flex flex-col items-center py-2 hover:text-purple-600" data-target="fields">
+<!-- Field Icon -->
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 2v4l-5 8a5 5 0 0 0 4 8h6a5 5 0 0 0 4-8l-5-8V2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Field</span>
+</button>
+<button class="footer-link flex flex-col items-center py-2 hover:text-orange-600" data-target="pathway">
+<!-- Pathway Icon -->
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 6h6a4 4 0 1 1 0 8H8a4 4 0 1 0 0 8h13" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Pathway</span>
+</button>
+<button class="footer-link flex flex-col items-center py-2 hover:text-green-600" data-target="dashboard">
+<!-- Dashboard Icon -->
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 13l6-6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Dashboard</span>
+</button>
+<button class="footer-link flex flex-col items-center py-2 hover:text-blue-600" data-target="passport" id="footerPassport" onclick="showScreen('passport')">
+<!-- Passport Icon -->
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<rect height="14" rx="2" ry="2" width="18" x="3" y="5"></rect>
+<path d="M7 9h6M7 13h8M17 11.5a1.5 1.5 0 1 0 0-.01z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Passport</span>
+</button>
+</div>
+</nav>
+<!-- ===== GAS Bridge (Apps Script integration) ===== -->
+<script src="assets/js/config.js"></script><script src="assets/js/script.js"></script><button id="save-to-sheet-btn" style="position:fixed; right:20px; bottom:90px; padding:12px 16px; border:none; border-radius:10px; background:#2563eb; color:#fff; font-weight:600; cursor:pointer; z-index:99998; box-shadow:0 8px 20px rgba(0,0,0,.2);">Save to Google Sheet</button></body>
+</html>
