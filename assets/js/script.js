@@ -718,75 +718,47 @@ window.fieldsData = fieldsData; // make globally accessible
         }*/
 
 async function register(){
-
-
-
-
-
-  /*const name  = document.getElementById('regName')?.value?.trim() || '';
-  const email = (document.getElementById('regEmail')?.value || '').trim().toLowerCase();
-  const pwd   = document.getElementById('regPassword')?.value || '';
-  if (!email || !pwd || !name) { alert('Please fill name, email & password'); return; }
-  */
-
   clearValidationErrors?.();
 
   const name  = document.getElementById('regName')?.value?.trim() || '';
   const email = (document.getElementById('regEmail')?.value || '').trim().toLowerCase();
   const pwd   = document.getElementById('regPassword')?.value || '';
 
-  let hasErrors = false; const missing = [];
+  const missing = [];
+  const emailOk = !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!name) missing.push('Name');
+  if (!emailOk) missing.push('Valid Email');
+  if (!pwd || pwd.length < 8) missing.push('Password (min 8)');
 
-  // Email mesti ada @ (dan format asas)
-  const emailOk = !!email && email.includes('@') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  if (!emailOk){
-    showFieldError?.('regEmail', 'Please enter a valid email');
-    missing.push('Email'); hasErrors = true;
-  }
-
-  // Password min 8 aksara
-  if (!pwd || pwd.length < 8){
-    showFieldError?.('regPassword', 'Password must be at least 8 characters');
-    missing.push('Password'); hasErrors = true;
-  }
-
-  if (!name){
-    showFieldError?.('regName', 'Name is required');
-    missing.push('Name'); hasErrors = true;
-  }
-
-  if (hasErrors){
+  if (missing.length){
     (showErrorMessage?.(`Please complete: ${missing.join(', ')}`)) || alert(`Please complete: ${missing.join(', ')}`);
     return;
   }
 
   try{
-    const { endpoint, token } = GAS_CONFIG;
+    const { endpoint, token } = GAS_CONFIG || {};
     const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'registerAccount', data:{ email, name, password: pwd } }) });
     const json = await res.json();
-
     if (!json.ok) { alert(json.error || 'Register failed'); return; }
 
-    // login terus (token sesi – laju)
-    state.auth = { isLoggedIn:true, email, name };
+    // login segera
+    state.auth    = { isLoggedIn:true, email, name };
     state.profile = { ...(state.profile||{}), name, email };
-    localStorage.setItem('tvetmara_token', json.token);
+    state.navigation = { ...(state.navigation||{}), onboarding:true }; // supaya Save Profile route ke learning
+    try { localStorage.setItem('tvetmara_token', json.token); } catch(_){}
+    saveState(); updateUI?.(); updateHeaderName?.();
 
-      // ...validasi & set state.auth/state.profile sedia ada...
-    state.flags = state.flags || {};
-    state.flags.registeringNow = true;   // <— TANDA
-
-    saveState();
-    updateUI?.(); updateHeaderName?.();
-    state.navigation = { ...(state.navigation||{}), onboarding:true }; // untuk alur profile->learning
+    // ikut flow: register -> welcome -> profile
     showScreen('welcome');
+    setTimeout(()=> showScreen('profile'), 600);
 
-    // (opsyen) autosave snapshot
-    setTimeout(()=>{ try{ autoSaveToSheet?.('register'); }catch(_){} }, 0);
-
-  }catch(e){ console.error(e); alert('Register failed'); }
+  }catch(e){
+    console.error(e);
+    alert('Register failed');
+  }
 }
 window.register = register;
+
 
 
 
@@ -871,45 +843,40 @@ window.login = login;  // pastikan global
         }*/
 
 // Initialize Application
-        async function init(){
-            // --- inisialisasi asas
-            loadState();
-            updateUI();
-            populateFields();
-            updateHamburgerLocks?.();
-            updateFooterLocks?.();
-            updateHeaderName?.();
-            if (typeof hydrateDataSave === 'function') hydrateDataSave();
 
-            // --- tentukan "last screen" yang sah
-            const last = localStorage.getItem('tvetmara_last_screen');
-            const exists = id => !!document.getElementById(id);
-            const go =
-                (last && exists(last)) ? last :
-                (exists('learning') ? 'learning' :
-                (exists('welcome')  ? 'welcome'  :
-                (exists('cover')    ? 'cover'    : (document.querySelector('.screen')?.id || 'cover'))));
+async function init(){
+  loadState();
+  updateUI();
+  populateFields();
+  updateHamburgerLocks?.();
+  updateFooterLocks?.();
+  updateHeaderName?.();
+  if (typeof hydrateDataSave === 'function') hydrateDataSave();
 
-            // --- LOGIN PANTAS DENGAN TOKEN
-            const sess = localStorage.getItem('tvetmara_token');
-            if (sess) {
-                // Masuk serta-merta; sahkan token di belakang tab
-                state.auth = { ...(state.auth||{}), isLoggedIn: true };
-                saveState();
-                showScreen(go);
+  const sess = localStorage.getItem('tvetmara_token');
 
-                // Sahkan secara async; kalau tak sah → logout
-                validateToken(sess).catch(() => { logout(); });
-                return;
-            }
+  if (sess){
+    // masuk segera
+    state.auth = { ...(state.auth||{}), isLoggedIn:true };
+    saveState();
+    showScreen('dashboard');  // login -> dashboard
 
-            // --- fallback bila tiada token
-            if (state.auth?.isLoggedIn) {
-                showScreen(go);
-            } else {
-                showScreen('cover');
-            }
-            }
+    // sahkan di belakang tab (kalau tak sah, logout)
+    try {
+      await validateToken(sess);
+    } catch {
+      logout();
+    }
+    return;
+  }
+
+  if (state.auth?.isLoggedIn) {
+    showScreen('dashboard');
+  } else {
+    showScreen('cover');
+  }
+}
+
 
 
         // pemanggil kecil untuk sahkan token
@@ -925,27 +892,33 @@ window.login = login;  // pastikan global
 
 
 
-        async function login(){
-          const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
-          const pwd   = document.getElementById('loginPassword')?.value || '';
-          if (!email || !pwd) { alert('Enter email & password'); return; }
+async function login(){
+  const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+  const pwd   = document.getElementById('loginPassword')?.value || '';
+  if (!email || !pwd) { alert('Enter email & password'); return; }
 
-          try{
-            const { endpoint, token } = GAS_CONFIG;
-            const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'loginAccount', data:{ email, password: pwd } }) });
-            const json = await res.json();
-            if (!json.ok) { alert(json.error || 'Login failed'); return; }
+  try{
+    const { endpoint, token } = GAS_CONFIG || {};
+    const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'loginAccount', data:{ email, password: pwd } }) });
+    const json = await res.json();
+    if (!json.ok) { alert(json.error || 'Login failed'); return; }
 
-            // login segera + simpan token
-            localStorage.setItem('tvetmara_token', json.token);
-            state.auth    = { isLoggedIn:true, email, name: json.name || state.auth?.name || '' };
-            state.profile = { ...(state.profile||{}), email, name: json.name || state.profile?.name || '' };
+    // login + token
+    try { localStorage.setItem('tvetmara_token', json.token); } catch(_){}
+    state.auth    = { isLoggedIn:true, email, name: json.name || state.auth?.name || '' };
+    state.profile = { ...(state.profile||{}), email, name: json.name || state.profile?.name || '' };
+    saveState(); updateUI?.(); updateHeaderName?.();
 
-            saveState(); updateUI?.(); updateHeaderName?.();
-            showScreen('welcome');
-          }catch(e){ console.error(e); alert('Login failed'); }
-        }
-        window.login = login;
+    // — requirement baru: selepas login terus ke dashboard
+    showScreen('dashboard');
+
+  }catch(e){
+    console.error(e);
+    alert('Login failed');
+  }
+}
+window.login = login;
+
 
 
 
@@ -1239,7 +1212,6 @@ function showScreen(screenName, fromScreen = null) {
   }
 }*/
 
-//fungsi saveProfile ni ada tambahan hold 1.5saat
 function saveProfile() {
   clearValidationErrors?.();
 
@@ -1260,33 +1232,28 @@ function saveProfile() {
     return;
   }
 
+  // simpan ke state
   state.profile = { ...(state.profile||{}), name, email, dob, school, grade, field };
   saveState();
-  updateUI?.(); updateHeaderName?.();
+  updateLearningScreen();
+  updateSection3Locks();
+  updateUI?.(); 
+  updateHeaderName?.();
 
-  // NAV HOLD: elak 'welcome' override oleh hook lain (1.5s)
-  window.__navHoldUntil = Date.now() + 1500;
+  // — hantar ke Google Sheet (guna sendToSheetSafe jika ada, fallback ke onSaveToSheet/sendToSheet) —
+  setTimeout(() => {
+    try { typeof syncSaveFields === 'function' && syncSaveFields(); } catch(_) {}
+    try {
+      const send = window.sendToSheetSafe || window.onSaveToSheet || window.sendToSheet;
+      typeof send === 'function' && send();
+    } catch(_) {}
+  }, 0);
 
-  const fromRegister = !!(state.navigation && state.navigation.onboarding);
-  if (state.navigation) state.navigation.onboarding = false;
-
-  const prev = state.navigation?.previousScreen;
-  const back = (prev && prev !== 'cover' && prev !== 'profile') ? prev : 'dashboard';
-
-  showScreen(fromRegister ? 'learning' : back);
-
-  // HANTAR ke Google Sheet (sekali saja)
-  if (!window.__saveProfileSendAt || Date.now() > window.__saveProfileSendAt) {
-    window.__saveProfileSendAt = Date.now() + 500;
-    setTimeout(() => {
-      try { typeof syncSaveFields === 'function' && syncSaveFields(); } catch(_) {}
-      try {
-        const send = window.sendToSheetSafe || window.sendToSheet;
-        typeof send === 'function' && send();
-      } catch(_) {}
-    }, 0);
-  }
+  // — lepas Save Profile: sentiasa ke #learning (ikut requirement baru) —
+  state.navigation = { ...(state.navigation||{}), onboarding:false, previousScreen:null };
+  showScreen('learning');
 }
+
 
 
 
@@ -2800,6 +2767,224 @@ function saveProfile() {
             
             const previewWindow = window.open('', '_blank');
             previewWindow.document.write(`
+              <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>CV Preview - ${cvData.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
+                        .header { display: flex; align-items: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+                        .profile-section { flex: 1; }
+                        .profile-picture { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-left: 20px; border: 3px solid #333; }
+                        .no-picture { width: 120px; height: 120px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin-left: 20px; border: 3px solid #333; color: #666; font-size: 12px; }
+                        .section { margin-bottom: 25px; }
+                        .section h3 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px; }
+                        .contact-info { margin-top: 10px; }
+                        .contact-info span { display: block; margin-bottom: 5px; }
+                        .skills-list, .achievements-list, .activities-list { display: flex; flex-wrap: wrap; gap: 8px; }
+                        .skill-tag, .achievement-tag, .activity-tag { background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 15px; font-size: 14px; }
+                        .goals-section { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; }
+                        @media print { body { margin: 0; padding: 15px; } .no-print { display: none; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="profile-section">
+                            <h1 style="margin: 0; font-size: 2.5em;">${cvData.name}</h1>
+                            <div class="contact-info">
+                                <span><strong>Email:</strong> ${cvData.email}</span>
+                                ${cvData.phone ? `<span><strong>Phone:</strong> ${cvData.phone}</span>` : ''}
+                                ${cvData.location ? `<span><strong>Location:</strong> ${cvData.location}</span>` : ''}
+                            </div>
+                        </div>
+                        ${cvData.profilePicture ? 
+                            `<img src="${cvData.profilePicture}" alt="Profile Picture" class="profile-picture">` : 
+                            `<div class="no-picture">No Photo</div>`
+                        }
+                    </div>
+                    
+                    ${cvData.summary ? `
+                    <div class="section">
+                        <h3>Professional Summary</h3>
+                        <p>${cvData.summary}</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${cvData.goals.content ? `
+                    <div class="section">
+                        <h3>Career Goals (${cvData.goals.horizon || '5'} Years)</h3>
+                        <div class="goals-section">
+                            ${cvData.goals.isCustom ? 
+                                `<div style="white-space: pre-line;">${cvData.goals.customContent || cvData.goals.content}</div>` :
+                                cvData.goals.content
+                            }
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${cvData.educationEntries && cvData.educationEntries.length > 0 ? `
+                    <div class="section">
+                        <h3>Education</h3>
+                        ${cvData.educationEntries.map(edu => `
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong>${edu.degree}</strong>
+                                    <span style="color: #666; font-size: 14px;">${edu.startYear} - ${edu.endYear}</span>
+                                </div>
+                                <div style="color: #666; font-style: italic;">${edu.institution}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${(cvData.selectedTechnicals && cvData.selectedTechnicals.length > 0) || 
+                      (cvData.selectedSofts && cvData.selectedSofts.length > 0) || 
+                      (cvData.selectedLanguages && cvData.selectedLanguages.length > 0) ? `
+                    <div class="section">
+                        <h3>Skills</h3>
+                        ${cvData.selectedTechnicals && cvData.selectedTechnicals.length > 0 ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong>Technical Skills:</strong>
+                                <div class="skills-list" style="margin-top: 8px;">
+                                    ${cvData.selectedTechnicals.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${cvData.selectedSofts && cvData.selectedSofts.length > 0 ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong>Soft Skills:</strong>
+                                <div class="skills-list" style="margin-top: 8px;">
+                                    ${cvData.selectedSofts.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${cvData.selectedLanguages && cvData.selectedLanguages.length > 0 ? `
+                            <div>
+                                <strong>Languages:</strong>
+                                <div class="skills-list" style="margin-top: 8px;">
+                                    ${cvData.selectedLanguages.map(lang => `<span class="skill-tag">${lang}</span>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    ${cvData.experienceEntries && cvData.experienceEntries.length > 0 ? `
+                    <div class="section">
+                        <h3>Experience</h3>
+                        ${cvData.experienceEntries.map(exp => `
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong>${exp.position}</strong>
+                                    <span style="color: #666; font-size: 14px;">${formatDate(exp.startDate)} - ${exp.endDate === 'Present' ? 'Present' : formatDate(exp.endDate)}</span>
+                                </div>
+                                <div style="color: #666; font-style: italic; margin-bottom: 8px;">${exp.company}</div>
+                                ${exp.description ? `<p style="margin: 0; line-height: 1.4;">${exp.description}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${cvData.selectedAchievements && cvData.selectedAchievements.length > 0 ? `
+                    <div class="section">
+                        <h3>Achievements & Awards</h3>
+                        <div class="achievements-list">
+                            ${cvData.selectedAchievements.map(achievement => `<span class="achievement-tag">${achievement}</span>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${cvData.selectedExtracurriculars && cvData.selectedExtracurriculars.length > 0 ? `
+                    <div class="section">
+                        <h3>Extracurricular Activities</h3>
+                        <div class="activities-list">
+                            ${cvData.selectedExtracurriculars.map(activity => `<span class="activity-tag">${activity}</span>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                
+<script>
+(function(){
+  function waitForData(cb, tries=40){
+    if ((window.fieldsData) && window.state && state.profile) { cb(); return; }
+    if (tries <= 0) { cb(); return; }
+    setTimeout(()=>waitForData(cb, tries-1), 200);
+  }
+  function run(){
+    (window.updatePassportEnhanced || window.updatePassport)?.();
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    const p = document.getElementById('passport');
+    if (p && !p.classList.contains('hidden')) {
+      waitForData(run);
+    }
+  });
+})();
+<\/script>
+
+
+<script>
+(function(){
+  function resolveName(){
+    try{
+      if (window.state && state.profile && state.profile.name) return state.profile.name;
+      if (window.state && state.auth && state.auth.name) return state.auth.name;
+      const ls = localStorage.getItem('regName'); if (ls) return ls;
+      const email = (state && state.profile && state.profile.email) || localStorage.getItem('regEmail') || '';
+      if (email && email.includes('@')) return email.split('@')[0];
+    }catch(e){}
+    return '-';
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    const nm = resolveName();
+    const header = document.getElementById('headerRegName'); if (header) header.textContent = nm;
+    const pn = document.getElementById('passportName'); if (pn) pn.textContent = nm;
+  });
+})();
+<\/script>
+
+
+<script>
+(function(){
+  function doLogout(){
+    try {
+      if (window.state) {
+        state.auth = { isLoggedIn: false };
+        try { localStorage.removeItem('regName'); } catch(e){}
+        try { localStorage.removeItem('regEmail'); } catch(e){}
+        if (typeof saveState === 'function') saveState();
+      }
+    } catch(e){}
+    // Navigate to cover/login
+    if (typeof showScreen === 'function') {
+      showScreen('cover');
+    } else if (typeof switchTo === 'function') {
+      switchTo('cover');
+    } else {
+      // Fallback: hide all .screen and show #cover
+      try {
+        document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+        const cover = document.getElementById('cover'); if (cover) cover.classList.remove('hidden');
+      } catch(e) {}
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    const btn = document.getElementById('logoutBtn');
+    if (btn && !btn.dataset.boundLogout){
+      btn.addEventListener('click', function(e){ e.preventDefault(); doLogout(); });
+      btn.dataset.boundLogout = '1';
+    }
+  });
+  // Expose for reuse
+  window.doLogout = doLogout;
+})();
+<\/script>
+
+
+
+
+</body>
+                </html>
 
             `);
             previewWindow.document.close();
@@ -2900,6 +3085,8 @@ function saveProfile() {
             }
             
             saveState();
+            updateLearningScreen();
+            updateSection3Locks();
             updateHamburgerLocks();
             updateFooterLocks();
             setTimeout(() => { try { syncSaveFields(); } catch (e) { console.warn('syncSaveFields fail', e); } }, 0);
@@ -2948,6 +3135,8 @@ function saveProfile() {
             }
             
             saveState();
+            updateLearningScreen();
+            updateSection3Locks();
             updateHamburgerLocks();
             updateFooterLocks();
             setTimeout(() => { try { syncSaveFields(); } catch (e) { console.warn('syncSaveFields fail', e); } }, 0);
@@ -6040,6 +6229,35 @@ function sendToSheetSafe(){
   });
 }*/
 
+// ---- UNLOCK LOGIC: hilangkan Lock bila s2 siap + Field + Pathway dipilih
+function updateSection3Locks(){
+  const s2 = Array.isArray(state?.missions?.s2) ? state.missions.s2 : [];
+  const doneS2   = s2.length >= 3 && s2.every(Boolean);
+  const hasField = !!state?.profile?.field;
+  const hasPath  = !!state?.pathway;
+  const unlocked = doneS2 && hasField && hasPath;
+
+  const tweak = (btnId) => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    // tukar teks/disabled
+    btn.disabled = !unlocked;
+    btn.textContent = unlocked ? (btn.dataset.label || btn.textContent) : 'Locked 🔒';
+    // kasi rupa “kunci” pada kad (optional)
+    const card = btn.closest('.bg-gradient-to-br');
+    if (card) card.classList.toggle('is-locked', !unlocked);
+  };
+
+  tweak('btnSetGoals');
+  tweak('btnCVBuilder');
+
+  // Badge Advanced: grayscale bila terkunci
+  const adv = document.getElementById('advancedBadge');
+  if (adv){
+    adv.classList.toggle('badge-locked', !unlocked);
+    adv.classList.toggle('badge-earned', unlocked);
+  }
+}
 
 
 
