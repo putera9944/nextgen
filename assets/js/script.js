@@ -772,6 +772,10 @@ async function register(){
     state.profile = { ...(state.profile||{}), name, email };
     localStorage.setItem('tvetmara_token', json.token);
 
+      // ...validasi & set state.auth/state.profile sedia ada...
+    state.flags = state.flags || {};
+    state.flags.registeringNow = true;   // <— TANDA
+
     saveState();
     updateUI?.(); updateHeaderName?.();
     state.navigation = { ...(state.navigation||{}), onboarding:true }; // untuk alur profile->learning
@@ -995,6 +999,17 @@ window.login = login;  // pastikan global
         window.confirmForgot = confirmForgot;
 
 
+        function navigateBackOr(fallback) {
+          const prev = state.navigation?.previousScreen;
+          // kosongkan supaya kitaran seterusnya tak terikat
+          if (state.navigation) state.navigation.previousScreen = null;
+          // elak kembali ke 'cover'
+          const target = (prev && prev !== 'cover') ? prev : fallback;
+          showScreen(target);
+        }
+
+
+
 
 
 
@@ -1038,38 +1053,73 @@ window.login = login;  // pastikan global
             setTimeout(()=>{ try { hydrateDataSave(); } catch(_) {} }, 0);
         }*/
 
-            function showScreen(screenName, fromScreen = null) {
-  const was = state.navigation?.currentScreen ||
+function showScreen(screenName, fromScreen = null) {
+  // pastikan objek wujud
+  state.navigation = state.navigation || {};
+
+  // skrin aktif sebelum tukar
+  const was = state.navigation.currentScreen ||
               (document.querySelector('.screen:not(.hidden)')?.id || null);
 
-  // ▼ bila pergi ke 'profile', rekod skrin asal untuk patah balik
+  // --- Tetapkan previousScreen dengan berhati-hati ---
   if (screenName === 'profile') {
-    state.navigation.previousScreen =
-      was && was !== 'cover' ? was : (state.navigation?.previousScreen || 'dashboard');
+    // Jika onboarding (lepas register), JANGAN overwrite previous — biar saveProfile tentukan (#learning)
+    if (!state.navigation.onboarding) {
+      // elak loop: jangan jadikan 'profile/fields/pathway/cover' sebagai previous
+      if (was && !['profile','fields','pathway','cover'].includes(was)) {
+        state.navigation.previousScreen = was;
+      } else {
+        state.navigation.previousScreen = state.navigation.previousScreen || 'dashboard';
+      }
+    }
   } else if (fromScreen) {
+    // pemanggil tentukan secara eksplisit
     state.navigation.previousScreen = fromScreen;
   } else if (screenName === 'fields' || screenName === 'pathway') {
-    state.navigation.previousScreen = was;
+    // bila buka pemilihan, ingat dari mana datang (elak loop)
+    if (was && !['fields','pathway','cover'].includes(was)) {
+      state.navigation.previousScreen = was;
+    }
   }
+  // (lain-lain skrin: jangan ubah previousScreen)
 
+  // --- Tunjuk skrin (dengan fallback selamat) ---
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  (document.getElementById(screenName) || document.getElementById('welcome') || document.getElementById('cover'))
-    .classList.remove('hidden');
 
+  let target = document.getElementById(screenName);
+  if (!target) {
+    // fallback ikut keutamaan
+    target = document.getElementById('welcome')
+          || document.getElementById('learning')
+          || document.getElementById('cover')
+          || document.querySelector('.screen');
+  }
+  if (!target) {
+    console.warn('Screen not found:', screenName);
+    return;
+  }
+  target.classList.remove('hidden');
+
+  // Navbar show/hide jika ada
   const nav = document.getElementById('navigation');
-  if (nav) (screenName === 'cover') ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+  if (nav) (target.id === 'cover') ? nav.classList.add('hidden') : nav.classList.remove('hidden');
 
-  if (screenName === 'profile')   loadProfile();
-  if (screenName === 'learning')  updateLearningScreen();
-  if (screenName === 'dashboard') { updateDashboard(); updatePathwayTimeline(); }
-  if (screenName === 'skills')    updateSkillsScreen();
-  if (screenName === 'passport')  updatePassport();
-  if (screenName === 'goals')     loadGoalsPage();
-  if (screenName === 'cvbuilder') loadCVBuilderPage();
+  // Loader khusus
+  if (target.id === 'profile')   loadProfile();
+  if (target.id === 'learning')  updateLearningScreen();
+  if (target.id === 'dashboard') { updateDashboard(); updatePathwayTimeline(); }
+  if (target.id === 'skills')    updateSkillsScreen();
+  if (target.id === 'passport')  updatePassport();
+  if (target.id === 'goals')     loadGoalsPage();
+  if (target.id === 'cvbuilder') loadCVBuilderPage();
 
-  state.navigation.currentScreen = screenName;
+  // Rekod skrin semasa
+  state.navigation.currentScreen = target.id;
+
+  // Hydrate data-save (tak ganggu UI)
   setTimeout(()=>{ try { hydrateDataSave?.(); } catch(_) {} }, 0);
 }
+
 
 
 
@@ -1136,78 +1186,64 @@ window.login = login;  // pastikan global
         }
 
         function saveProfile() {
-            clearValidationErrors();
-            
-            const name = document.getElementById('profileName').value.trim();
-            const dob = document.getElementById('profileDob').value;
-            const school = document.getElementById('profileSchool').value.trim();
-            const grade = document.getElementById('profileGrade').value;
-            
-            let hasErrors = false;
-            const missingFields = [];
-            
-            if (!name) {
-                showFieldError('profileName', 'Full Name is required');
-                missingFields.push('Full Name');
-                hasErrors = true;
-            }
-            
-            if (!dob) {
-                showFieldError('profileDob', 'Date of Birth is required');
-                missingFields.push('Date of Birth');
-                hasErrors = true;
-            }
-            
-            if (!school) {
-                showFieldError('profileSchool', 'School/Institution is required');
-                missingFields.push('School/Institution');
-                hasErrors = true;
-            }
-            
-            if (!grade) {
-                showFieldError('profileGrade', 'Grade Level is required');
-                missingFields.push('Grade Level');
-                hasErrors = true;
-            }
-            
-            if (hasErrors) {
-                showErrorMessage(`Please complete the following required fields: ${missingFields.join(', ')}`);
-                return;
-            }
-            
-            // GANTI bahagian ini dalam saveProfile()
-            state.profile = {
-                ...(state.profile || {}),
-                name,
-                email: document.getElementById('profileEmail').value,
-                dob,
-                school,
-                grade,
-                field: document.getElementById('profileField').value
-                };
+  clearValidationErrors?.();
 
-            saveState();
-            updateUI();
-            updateHeaderName?.();
-            
-                // ▼ Tentukan destinasi
-const cameFrom = state.navigation?.previousScreen || 'dashboard';
-if (state.navigation?.onboarding) {
-  // onboard sekali je → ke #learning
-  state.navigation.onboarding = false;       // reset flag
-  showScreen('learning');
-} else {
-  // kalau datang dari dashboard/apa-apa skrin, patah balik ke situ
-  showScreen(cameFrom === 'profile' ? 'dashboard' : cameFrom);
+  const name   = document.getElementById('profileName')?.value?.trim() || '';
+  const dob    = document.getElementById('profileDob')?.value || '';
+  const school = document.getElementById('profileSchool')?.value?.trim() || '';
+  const grade  = document.getElementById('profileGrade')?.value || '';
+  const email  = document.getElementById('profileEmail')?.value || '';
+  const field  = document.getElementById('profileField')?.value || '';
+
+  // --- Validasi
+  const missing = [];
+  if (!name)   { showFieldError?.('profileName',   'Full Name is required');          missing.push('Full Name'); }
+  if (!dob)    { showFieldError?.('profileDob',    'Date of Birth is required');      missing.push('Date of Birth'); }
+  if (!school) { showFieldError?.('profileSchool', 'School/Institution is required'); missing.push('School/Institution'); }
+  if (!grade)  { showFieldError?.('profileGrade',  'Grade Level is required');        missing.push('Grade Level'); }
+  if (missing.length){
+    (showErrorMessage?.(`Please complete: ${missing.join(', ')}`)) || alert(`Please complete: ${missing.join(', ')}`);
+    return;
+  }
+
+  // --- Simpan ke state
+  state.profile = {
+    ...(state.profile || {}),
+    name, email, dob, school, grade, field
+  };
+
+  saveState();
+  updateUI?.();
+  updateHeaderName?.();
+
+  // --- Tentukan destinasi
+  const fromRegister = !!(state.navigation && state.navigation.onboarding);
+  if (state.navigation) state.navigation.onboarding = false;
+
+  // fallback asal skrin
+  const prev = state.navigation?.previousScreen;
+  const back = (prev && prev !== 'cover' && prev !== 'profile') ? prev : 'dashboard';
+
+  if (fromRegister) {
+    showScreen('learning');
+  } else {
+    showScreen(back);
+  }
+
+  // --- Hantar ke Google Sheet (sekali sahaja)
+  //    Debounce 500ms elak dwi-hantar jika ada event lain serentak
+  if (!window.__saveProfileSendAt || Date.now() > window.__saveProfileSendAt) {
+    window.__saveProfileSendAt = Date.now() + 500;
+    setTimeout(() => {
+      try { typeof syncSaveFields === 'function' && syncSaveFields(); } catch(_) {}
+      try {
+        const send = window.sendToSheetSafe || window.sendToSheet;
+        typeof send === 'function' && send();
+      } catch(_) {}
+    }, 0);
+  }
 }
 
-// ▼ Pastikan setiap klik "Save Profile" hantar ke Google Sheet
-setTimeout(() => {
-  try { syncSaveFields?.(); } catch(_) {}
-  try { (window.sendToSheetSafe || window.sendToSheet)?.(); } catch(_) {}
-}, 0);
-
-        }
 
         // Timeline System
         function updatePathwayTimeline() {
