@@ -987,7 +987,7 @@ window.login = login;
 
 
         // Screen Management
-        /*function showScreen(screenName, fromScreen = null) {
+        function showScreen(screenName, fromScreen = null) {
             // Track previous screen for navigation
             if (fromScreen) {
                 state.navigation.previousScreen = fromScreen;
@@ -1024,9 +1024,9 @@ window.login = login;
             if (screenName === 'cvbuilder') loadCVBuilderPage();
 
             setTimeout(()=>{ try { hydrateDataSave(); } catch(_) {} }, 0);
-        }*/
+        }
 
-function showScreen(screenName, fromScreen = null) {
+/*function showScreen(screenName, fromScreen = null) {
   state.navigation = state.navigation || {};
 
   const was = state.navigation.currentScreen ||
@@ -1085,7 +1085,7 @@ function showScreen(screenName, fromScreen = null) {
   }
 
   setTimeout(()=>{ try { hydrateDataSave?.(); } catch(_) {} }, 0);
-}
+}*/
 
 
 
