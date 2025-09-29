@@ -40,11 +40,24 @@
 <h2 class="text-center mb-8 text-blue-600"><span class="text-3xl font-bold">NextGEN TVETMARA</span><br/>
 <span class="text-xl font-normal">Career Passport</span></h2>
 <div id="loginForm">
-<h3 class="text-xl font-semibold mb-4">Login</h3><input class="w-full p-3 border rounded mb-4" id="loginEmail" placeholder="Email" type="email"/> <input class="w-full p-3 border rounded mb-4" id="loginPassword" placeholder="Password" type="password"/> <button class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 mb-4" onclick="login()">Login</button>
+<h3 class="text-xl font-semibold mb-4">Login</h3><input class="w-full p-3 border rounded mb-4" id="loginEmail" placeholder="Email" type="email"/> <input class="w-full p-3 border rounded mb-4" id="loginPassword" type="password" placeholder="Password" required/> <button class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 mb-4" onclick="login()">Login</button>
 <p class="text-center">Don't have an account? <button class="text-blue-600 hover:underline" onclick="toggleForm()">Register</button></p>
+<div style="text-align: center; margin-top: 5px;">
+<button type="button" class="forgot-btn" onclick="startForgot()">Forgot password?</button>
+</div>
+<div id="fpArea" class="hidden">
+  <input id="fpCode" placeholder="6-digit code">
+  <input id="fpNew" type="password" placeholder="New password">
+  <button type="button" onclick="confirmForgot()">Set New Password</button>
+</div>
+
 </div>
 <div class="hidden" id="registerForm">
-<h3 class="text-xl font-semibold mb-4">Register</h3><input class="w-full p-3 border rounded mb-4" id="regName" placeholder="Full Name" type="text"/> <input class="w-full p-3 border rounded mb-4" id="regEmail" placeholder="Email" type="email"/> <input class="w-full p-3 border rounded mb-4" id="regPassword" placeholder="Password" type="password"/> <button class="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700 mb-4" onclick="register()">Register</button>
+<h3 class="text-xl font-semibold mb-4">Register</h3>
+<input class="w-full p-3 border rounded mb-4" id="regName" data-save="name" placeholder="Full Name" type="text"/>
+<input class="w-full p-3 border rounded mb-4" id="regEmail" data-save="email" placeholder="Email" type="email" inputmode="email" autocomplete="email"/> 
+<input class="w-full p-3 border rounded mb-4" id="regPassword" type="password" placeholder="Create password (min 8)" required minlength="8" autocomplete="new-password"/> 
+<button class="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700 mb-4" onclick="register()">Register</button>
 <p class="text-center">Already have an account? <button class="text-blue-600 hover:underline" onclick="toggleForm()">Login</button></p>
 </div>
 </div>
@@ -103,19 +116,19 @@
 </div>
 <div class="grid md:grid-cols-2 gap-6">
 <div>
-<label class="block text-sm font-medium mb-2">Full Name <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileName" required="" type="text"/>
+<label class="block text-sm font-medium mb-2">Full Name <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileName" data-save="name" required="" type="text">
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">Email <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded bg-gray-100" id="profileEmail" readonly="" type="email"/>
+<label class="block text-sm font-medium mb-2">Email <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded bg-gray-100" id="profileEmail" data-save="email" readonly="" type="email">
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">Date of Birth <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileDob" required="" type="date"/>
+<label class="block text-sm font-medium mb-2">Date of Birth <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileDob" data-save="dob" required="" type="date">
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">School/Institution <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileSchool" required="" type="text"/>
+<label class="block text-sm font-medium mb-2">School/Institution <span class="text-red-500">*</span></label> <input class="w-full p-3 border rounded" id="profileSchool" data-save="school" required="" type="text">
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">Grade Level <span class="text-red-500">*</span></label> <select class="w-full p-3 border rounded" id="profileGrade" required="">
+<label class="block text-sm font-medium mb-2">Grade Level <span class="text-red-500">*</span></label> <select class="w-full p-3 border rounded" id="profileGrade" data-save="grade" required="">
 <option value="">
                 Select Grade
               </option>
@@ -137,7 +150,7 @@
 </select>
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">Interested Field <span class="text-gray-400">(Optional)</span></label> <select class="w-full p-3 border rounded" id="profileField">
+<label class="block text-sm font-medium mb-2">Interested Field <span class="text-gray-400">(Optional)</span></label> <select class="w-full p-3 border rounded" id="profileField" data-save="field">
 <option value="">
                 Select Field
               </option>
@@ -916,22 +929,22 @@
 </div>
 <div class="grid md:grid-cols-2 gap-6">
 <div>
-<label class="block text-sm font-medium mb-2">Full Name</label> <input class="w-full p-3 border rounded-lg" id="cvFullName" readonly="" type="text"/>
+<label class="block text-sm font-medium mb-2">Full Name</label> <input class="w-full p-3 border rounded-lg" id="cvFullName" readonly="" type="text"/ data-save="cv.name">
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">Email</label> <input class="w-full p-3 border rounded-lg" id="cvEmail" readonly="" type="email"/>
+<label class="block text-sm font-medium mb-2">Email</label> <input class="w-full p-3 border rounded-lg" id="cvEmail" readonly="" type="email"/ data-save="cv.email">
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">Phone Number</label> <input class="w-full p-3 border rounded-lg" id="cvPhone" placeholder="e.g., +60 12-345 6789" type="tel"/>
+<label class="block text-sm font-medium mb-2">Phone Number</label> <input class="w-full p-3 border rounded-lg" id="cvPhone" placeholder="e.g., +60 12-345 6789" type="tel"/ data-save="cv.phone">
 </div>
 <div>
-<label class="block text-sm font-medium mb-2">Location</label> <input class="w-full p-3 border rounded-lg" id="cvLocation" placeholder="e.g., Kuala Lumpur, Malaysia" type="text"/>
+<label class="block text-sm font-medium mb-2">Location</label> <input class="w-full p-3 border rounded-lg" id="cvLocation" placeholder="e.g., Kuala Lumpur, Malaysia" type="text"/ data-save="cv.location">
 </div>
 </div>
 </div>
 <div>
 <h3 class="text-xl font-bold mb-4 text-blue-600">Professional Summary</h3>
-<textarea class="w-full p-3 border rounded-lg h-24" id="cvSummary" placeholder="Write 2-3 sentences about yourself and your career goals"></textarea>
+<textarea class="w-full p-3 border rounded-lg h-24" id="cvSummary" placeholder="Write 2-3 sentences about yourself and your career goals" data-save="cv.summary"></textarea>
 <div class="mt-2 flex items-center gap-2">
 <button class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm" id="regenSummaryBtn" type="button">Regenerate from Goals/Pathway</button>
 <span class="text-xs text-gray-500">Won't overwrite unless you click</span>
@@ -1128,6 +1141,18 @@
 </div>
 </div>
 </div>
+  <!-- ===== Values to send to Google Sheet (hidden) ===== -->
+<div id="sheet-hidden" class="hidden">
+  <input type="hidden" id="saveSuitableField" data-save="suitableField">
+  <input type="hidden" id="saveSelectedField" data-save="selectedField">
+  <input type="hidden" id="savePathway"       data-save="pathway">
+  <input type="hidden" id="saveInstitution"   data-save="institution">
+  <input type="hidden" id="saveOverall"       data-save="overallProgress">
+  <input type="hidden" id="saveTotalMarks"    data-save="totalMarks">
+  <input type="hidden" id="saveMissionDone"   data-save="missionComplete">
+  <input type="hidden" id="saveBadgesJson"    data-save="earnedBadgesJson">
+</div>
+
 </div>
 <!-- Side Drawer + Overlay -->
 <div class="hidden fixed inset-0 bg-black/40 z-[60]" id="drawerOverlay"></div>
@@ -1360,6 +1385,17 @@
 </button>
 </div>
 </nav>
+
+
+
+
+
+
 <!-- ===== GAS Bridge (Apps Script integration) ===== -->
-<script src="assets/js/config.js"></script><script src="assets/js/script.js"></script><button id="save-to-sheet-btn" style="position:fixed; right:20px; bottom:90px; padding:12px 16px; border:none; border-radius:10px; background:#2563eb; color:#fff; font-weight:600; cursor:pointer; z-index:99998; box-shadow:0 8px 20px rgba(0,0,0,.2);">Save to Google Sheet</button></body>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/script.js"></script>
+
+
+
+</body>
 </html>
