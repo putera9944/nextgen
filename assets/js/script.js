@@ -18,6 +18,57 @@
             careerQuiz: { taken: false, result: null, favorites: [] }
         };
 
+        //Tukar saveState sebab nak buat autosave ke dalam Google Sheet secara auto kalau pelajar selesai mana-mana mission atau update field
+
+
+        /*function saveState() {
+          localStorage.setItem('tvetmara_state', JSON.stringify(state));
+          window.state = state; // penting utk modul data-save
+        }*/
+
+        function saveState() {
+          try { localStorage.setItem('tvetmara_state', JSON.stringify(state)); } catch (_) {}
+          window.state = state; // penting utk modul lain
+        }
+
+
+          /*function saveState() {
+  // — kod asal simpan state —
+  try {
+    localStorage.setItem('tvetmara_state', JSON.stringify(state));
+  } catch (_) {}
+  window.state = state;  // penting supaya modul lain nampak state
+
+  // === AUTOSAVE HOOK (cooldown 2s supaya tak spam baris) ===
+  if (!window.__autoSaveCooldown || Date.now() > window.__autoSaveCooldown) {
+    window.__autoSaveCooldown = Date.now() + 2000;
+    try {                     // isi hidden inputs (8 lajur)
+      if (typeof window.syncSaveFields === 'function') window.syncSaveFields();
+    } catch (e) { console.warn('syncSaveFields:', e); }
+
+    const send = window.sendToSheetSafe || window.sendToSheet;  // fungsi hantar sedia ada
+    //const send = window.sendToSheetSafe;
+    if (typeof send === 'function') {
+      setTimeout(() => {   // async supaya tak block UI
+        try { send(); console.log('[AUTO] saveState -> send'); } 
+        catch (e) { console.warn('sendToSheet failed', e); }
+      }, 0);
+    } else {
+      console.warn('sendToSheet function not found');
+    }
+  }
+}*/
+
+
+
+
+        function loadState() {
+          const saved = localStorage.getItem('tvetmara_state');
+          if (saved) state = { ...state, ...JSON.parse(saved) };
+          window.state = state; // penting utk modul data-save
+        }
+
+
 
         /* ----------------- LOCK / VISIBILITY HELPERS ----------------- */
 /* Anggapkan: 
@@ -548,23 +599,75 @@ window.fieldsData = fieldsData; // make globally accessible
             }
         };
 
-        // Initialize Application
-        function init() {
-            loadState();
-            updateUI();
-            populateFields();
-            updateHamburgerLocks();   // <— tambah ini
-            updateFooterLocks();      // <— dan ini
-            
-            if (state.auth.isLoggedIn) {
-                showScreen('welcome');
-            } else {
-                showScreen('cover');
-            }
-        }
+        
+
+
+
+        // === data-save autosave (dipindahkan dari index.html) ===
+(function(){
+  if (window.__DATA_SAVE_WIRED__) return;           // elak gandaan
+  window.__DATA_SAVE_WIRED__ = true;
+
+  function setByPath(obj, path, val){
+    const keys = path.split('.');
+    let cur = obj;
+    for (let i=0;i<keys.length-1;i++){
+      const k=keys[i]; if(!cur[k]) cur[k]={}; cur=cur[k];
+    }
+    cur[keys[keys.length-1]] = val;
+  }
+  function getByPath(obj, path){
+    return path.split('.').reduce((a,k)=> (a ? a[k] : undefined), obj);
+  }
+  function toStatePath(key){
+    // Jika tiada dot, auto letak bawah profile.*
+    return key.includes('.') ? key : ('profile.'+key);
+  }
+
+  function onChange(e){
+    const el = e.target;
+    const key = el.getAttribute('data-save');
+    if (!key || !window.state) return;
+    const path  = toStatePath(key);
+    const value = (el.type === 'checkbox') ? el.checked : el.value;
+
+    setByPath(window.state, path, value);
+    try { localStorage.setItem('tvetmara_state', JSON.stringify(window.state)); } catch(_){}
+
+    // Segera kemas kini nama di header bila nama tukar
+    if (path === 'profile.name') {
+      const h = document.getElementById('headerRegName'); if (h) h.textContent = value || '-';
+      const p = document.getElementById('passportName');  if (p) p.textContent = value || '-';
+    }
+  }
+
+  // Boleh dipanggil semula selepas tukar skrin
+  window.hydrateDataSave = function hydrateDataSave(){
+    if (!window.state) return;
+    document.querySelectorAll('[data-save]').forEach(function(el){
+      const key = toStatePath(el.getAttribute('data-save'));
+      const val = getByPath(window.state, key);
+      if (val !== undefined){
+        if (el.type === 'checkbox') el.checked = !!val;
+        else el.value = val;
+      }
+      el.removeEventListener('input', onChange);
+      el.removeEventListener('change', onChange);
+      el.addEventListener('input', onChange);
+      el.addEventListener('change', onChange);
+    });
+  };
+})();
+
+
+
+
+
+
+
 
         // State Management
-        function saveState() {
+        /*function saveState() {
             localStorage.setItem('tvetmara_state', JSON.stringify(state));
         }
 
@@ -573,7 +676,7 @@ window.fieldsData = fieldsData; // make globally accessible
             if (saved) {
                 state = { ...state, ...JSON.parse(saved) };
             }
-        }
+        }*/
 
         // Authentication
         function toggleForm() {
@@ -589,7 +692,7 @@ window.fieldsData = fieldsData; // make globally accessible
             }
         }
 
-        function register() {
+        /*function register() {
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
@@ -606,46 +709,297 @@ window.fieldsData = fieldsData; // make globally accessible
             saveState();
             updateUI();
             showScreen('welcome');
+            
             enableAppUIAfterLogin();
+            updateHeaderName();
+            setTimeout(() => { try { syncSaveFields(); } catch (e) { console.warn('syncSaveFields fail', e); } }, 0);
+            
 
+        }*/
+
+async function register(){
+
+
+
+
+
+  /*const name  = document.getElementById('regName')?.value?.trim() || '';
+  const email = (document.getElementById('regEmail')?.value || '').trim().toLowerCase();
+  const pwd   = document.getElementById('regPassword')?.value || '';
+  if (!email || !pwd || !name) { alert('Please fill name, email & password'); return; }
+  */
+
+  clearValidationErrors?.();
+
+  const name  = document.getElementById('regName')?.value?.trim() || '';
+  const email = (document.getElementById('regEmail')?.value || '').trim().toLowerCase();
+  const pwd   = document.getElementById('regPassword')?.value || '';
+
+  let hasErrors = false; const missing = [];
+
+  // Email mesti ada @ (dan format asas)
+  const emailOk = !!email && email.includes('@') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!emailOk){
+    showFieldError?.('regEmail', 'Please enter a valid email');
+    missing.push('Email'); hasErrors = true;
+  }
+
+  // Password min 8 aksara
+  if (!pwd || pwd.length < 8){
+    showFieldError?.('regPassword', 'Password must be at least 8 characters');
+    missing.push('Password'); hasErrors = true;
+  }
+
+  if (!name){
+    showFieldError?.('regName', 'Name is required');
+    missing.push('Name'); hasErrors = true;
+  }
+
+  if (hasErrors){
+    (showErrorMessage?.(`Please complete: ${missing.join(', ')}`)) || alert(`Please complete: ${missing.join(', ')}`);
+    return;
+  }
+
+  try{
+    const { endpoint, token } = GAS_CONFIG;
+    const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'registerAccount', data:{ email, name, password: pwd } }) });
+    const json = await res.json();
+
+    if (!json.ok) { alert(json.error || 'Register failed'); return; }
+
+    // login terus (token sesi – laju)
+    state.auth = { isLoggedIn:true, email, name };
+    state.profile = { ...(state.profile||{}), name, email };
+    localStorage.setItem('tvetmara_token', json.token);
+
+    saveState();
+    updateUI?.(); updateHeaderName?.();
+    state.navigation = { ...(state.navigation||{}), onboarding:true }; // untuk alur profile->learning
+    showScreen('welcome');
+
+    // (opsyen) autosave snapshot
+    setTimeout(()=>{ try{ autoSaveToSheet?.('register'); }catch(_){} }, 0);
+
+  }catch(e){ console.error(e); alert('Register failed'); }
+}
+window.register = register;
+
+
+
+
+        /*async function login(){
+  const emailEl = document.getElementById('loginEmail');
+  const email = (emailEl?.value || '').trim().toLowerCase();
+  if (!email) { alert('Please enter your email.'); return; }
+
+  try{
+    const { endpoint, token } = window.GAS_CONFIG || {};
+    if (!endpoint || !token) { alert('Server not configured.'); return; }
+
+    const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'checkEmail', data:{ email } }) });
+    const text = await res.text(); let json = {}; try { json = JSON.parse(text); } catch(_){}
+    if (!res.ok || json.ok === false) throw new Error(json.error || ('HTTP '+res.status));
+
+    if (!json.exists){
+      alert('This email doesn’t exist. Please register!');
+      return;
+    }
+
+    // ====== gunakan rekod TERKINI ======
+    const r = json.row || {};
+
+    // senyapkan autosave masa login supaya tak tambah baris
+    const prevNoSheet = window.__noSheet; window.__noSheet = true;
+
+    // isi auth & profile daripada row terbaru
+    state.auth = { isLoggedIn:true, email, name: r['Name'] || state.auth?.name || '' };
+
+    // jika anda perlukan 'field' (key), cuba padankan SelectedField (nama) kepada key dalam fieldsData
+    let fieldKey = state.profile?.field || '';
+    if (!fieldKey && r['SelectedField'] && window.fieldsData){
+      for (const [k,v] of Object.entries(window.fieldsData)){
+        if ((v?.name||'').trim().toLowerCase() === String(r['SelectedField']).trim().toLowerCase()){
+          fieldKey = k; break;
         }
+      }
+    }
 
-        function login() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            
-            if (!email || !password) {
-                alert('Please fill in both email and password fields');
-                return;
-            }
-            
-            if (!email.includes('@')) {
-                alert('Please enter a valid email address');
-                return;
-            }
-            
-            state.auth = { isLoggedIn: true, email, name: email.split('@')[0] };
-            state.profile.email = email;
-            if (!state.profile.name) state.profile.name = email.split('@')[0];
-            
-            saveState();
-            updateUI();
-            showScreen('welcome');
-            enableAppUIAfterLogin();
+    state.profile = {
+      ...(state.profile||{}),
+      name:   r['Name']        || state.profile?.name   || state.auth?.name || '',
+      email:  r['Email']       || email,
+      dob:    r['DOB']         || state.profile?.dob    || '',
+      school: r['School']      || state.profile?.school || '',
+      grade:  r['GradeLevel']  || state.profile?.grade  || '',
+      field:  fieldKey || state.profile?.field || ''
+    };
 
-        }
+    // pathway & lain-lain jika berguna di UI
+    state.pathway = r['Pathway'] || state.pathway || '';
 
-        function logout() {
+    saveState();
+    updateUI?.();
+    updateHeaderName?.();
+
+    showScreen( document.getElementById('welcome') ? 'welcome' : 'learning' );
+
+    // buka semula autosave
+    setTimeout(()=>{ window.__noSheet = prevNoSheet || false; }, 400);
+
+  }catch(e){
+    console.error('Login error:', e);
+    alert('Login failed: ' + (e.message || e));
+  }
+}
+
+window.login = login;  // pastikan global
+
+*/
+
+
+        /*function logout() {
             state.auth = { isLoggedIn: false, email: '', name: '' };
             saveState();
             showScreen('cover');
             showFooterMenu(false);
             markActiveFooter('');
 
+        }*/
+
+// Initialize Application
+        async function init(){
+          // --- kekalkan inisialisasi sedia ada
+          loadState();
+          updateUI();
+          populateFields();
+          updateHamburgerLocks?.();
+          updateFooterLocks?.();
+          updateHeaderName?.();
+          if (typeof hydrateDataSave === 'function') hydrateDataSave();
+
+          // --- LOGIN PANTAS DENGAN TOKEN
+          const sess = localStorage.getItem('tvetmara_token');
+          if (sess) {
+            // masuk terus (elak tunggu 3-5s); sahkan di belakang tab
+            state.auth = { ...(state.auth||{}), isLoggedIn: true };
+            saveState();
+            showScreen(document.getElementById('welcome') ? 'welcome' : 'learning');
+
+            // sahkan token secara async; kalau tidak sah → logout
+            validateToken(sess).catch(() => { logout(); });
+            return; // hentikan init di sini
+          }
+
+          // --- fallback biasa jika tiada token
+          if (state.auth?.isLoggedIn) {
+            showScreen('welcome');
+          } else {
+            showScreen('cover');
+          }
         }
 
+        // pemanggil kecil untuk sahkan token
+        async function validateToken(token){
+          const { endpoint, token: apiToken } = GAS_CONFIG || {};
+          const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({
+            token: apiToken, action: 'validateToken', data: { token }
+          })});
+          const json = await res.json();
+          if (!json.ok || !json.valid) throw new Error('Invalid session');
+        }
+
+
+
+
+        async function login(){
+          const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+          const pwd   = document.getElementById('loginPassword')?.value || '';
+          if (!email || !pwd) { alert('Enter email & password'); return; }
+
+          try{
+            const { endpoint, token } = GAS_CONFIG;
+            const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'loginAccount', data:{ email, password: pwd } }) });
+            const json = await res.json();
+            if (!json.ok) { alert(json.error || 'Login failed'); return; }
+
+            // login segera + simpan token
+            localStorage.setItem('tvetmara_token', json.token);
+            state.auth    = { isLoggedIn:true, email, name: json.name || state.auth?.name || '' };
+            state.profile = { ...(state.profile||{}), email, name: json.name || state.profile?.name || '' };
+
+            saveState(); updateUI?.(); updateHeaderName?.();
+            showScreen('welcome');
+          }catch(e){ console.error(e); alert('Login failed'); }
+        }
+        window.login = login;
+
+
+
+
+        function logout(){
+          // senyapkan autosave sepanjang reset
+          window.__noSheet = true;
+
+          // buang token sesi
+          localStorage.removeItem('tvetmara_token');
+
+          // reset state minimum
+          state = {
+            auth: { isLoggedIn: false, email: '', name: '' },
+            profile: {},
+            missions: { s1:[false,false,false], s2:[false,false,false],
+              goalsSaved:false, cvBuilt:false, explorerCompleted:false,
+              fieldSelected:false, pathwaySelected:false },
+            pathway: '',
+            navigation: {}
+          };
+
+          saveState();
+          updateUI?.();
+          updateHeaderName?.();
+          showScreen('cover');
+
+          // buka semula autosave selepas UI stabil
+          setTimeout(() => { window.__noSheet = false; }, 400);
+        }
+
+        // Forgot password
+
+        async function startForgot(){
+            const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+            if (!email) { alert('Enter your email first.'); return; }
+            try{
+                const { endpoint, token } = GAS_CONFIG;
+                const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'startPasswordReset', data:{ email } }) });
+                const json = await res.json();
+                if (!json.ok) { alert(json.error || 'Failed'); return; }
+                alert('A reset code has been emailed to you. Please check your inbox.');
+                document.getElementById('fpArea')?.classList.remove('hidden');
+            }catch(e){ console.error(e); alert('Failed to start reset'); }
+            }
+            window.startForgot = startForgot;
+
+            async function confirmForgot(){
+            const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+            const code  = (document.getElementById('fpCode')?.value || '').trim();
+            const newPw = document.getElementById('fpNew')?.value || '';
+            if (!email || !code || !newPw){ alert('Fill email, code & new password'); return; }
+            try{
+                const { endpoint, token } = GAS_CONFIG;
+                const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify({ token, action:'confirmPasswordReset', data:{ email, code, newPassword:newPw } }) });
+                const json = await res.json();
+                if (!json.ok) { alert(json.error || 'Failed'); return; }
+                alert('Password updated. Please login.');
+            }catch(e){ console.error(e); alert('Failed to reset'); }
+        }
+        window.confirmForgot = confirmForgot;
+
+
+
+
+
         // Screen Management
-        function showScreen(screenName, fromScreen = null) {
+        /*function showScreen(screenName, fromScreen = null) {
             // Track previous screen for navigation
             if (fromScreen) {
                 state.navigation.previousScreen = fromScreen;
@@ -680,7 +1034,45 @@ window.fieldsData = fieldsData; // make globally accessible
             if (screenName === 'passport') updatePassport();
             if (screenName === 'goals') loadGoalsPage();
             if (screenName === 'cvbuilder') loadCVBuilderPage();
-        }
+
+            setTimeout(()=>{ try { hydrateDataSave(); } catch(_) {} }, 0);
+        }*/
+
+            function showScreen(screenName, fromScreen = null) {
+  const was = state.navigation?.currentScreen ||
+              (document.querySelector('.screen:not(.hidden)')?.id || null);
+
+  // ▼ bila pergi ke 'profile', rekod skrin asal untuk patah balik
+  if (screenName === 'profile') {
+    state.navigation.previousScreen =
+      was && was !== 'cover' ? was : (state.navigation?.previousScreen || 'dashboard');
+  } else if (fromScreen) {
+    state.navigation.previousScreen = fromScreen;
+  } else if (screenName === 'fields' || screenName === 'pathway') {
+    state.navigation.previousScreen = was;
+  }
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  (document.getElementById(screenName) || document.getElementById('welcome') || document.getElementById('cover'))
+    .classList.remove('hidden');
+
+  const nav = document.getElementById('navigation');
+  if (nav) (screenName === 'cover') ? nav.classList.add('hidden') : nav.classList.remove('hidden');
+
+  if (screenName === 'profile')   loadProfile();
+  if (screenName === 'learning')  updateLearningScreen();
+  if (screenName === 'dashboard') { updateDashboard(); updatePathwayTimeline(); }
+  if (screenName === 'skills')    updateSkillsScreen();
+  if (screenName === 'passport')  updatePassport();
+  if (screenName === 'goals')     loadGoalsPage();
+  if (screenName === 'cvbuilder') loadCVBuilderPage();
+
+  state.navigation.currentScreen = screenName;
+  setTimeout(()=>{ try { hydrateDataSave?.(); } catch(_) {} }, 0);
+}
+
+
+
 
         // Profile Management
         function loadProfile() {
@@ -783,23 +1175,38 @@ window.fieldsData = fieldsData; // make globally accessible
                 return;
             }
             
+            // GANTI bahagian ini dalam saveProfile()
             state.profile = {
-                ...state.profile,
-                name: name,
+                ...(state.profile || {}),
+                name,
                 email: document.getElementById('profileEmail').value,
-                dob: dob,
-                school: school,
-                grade: grade,
+                dob,
+                school,
+                grade,
                 field: document.getElementById('profileField').value
-            };
-            
+                };
+
             saveState();
-            alert('Profile saved successfully!');
             updateUI();
+            updateHeaderName?.();
             
-            setTimeout(() => {
-                showScreen('learning');
-            }, 500);
+                // ▼ Tentukan destinasi
+const cameFrom = state.navigation?.previousScreen || 'dashboard';
+if (state.navigation?.onboarding) {
+  // onboard sekali je → ke #learning
+  state.navigation.onboarding = false;       // reset flag
+  showScreen('learning');
+} else {
+  // kalau datang dari dashboard/apa-apa skrin, patah balik ke situ
+  showScreen(cameFrom === 'profile' ? 'dashboard' : cameFrom);
+}
+
+// ▼ Pastikan setiap klik "Save Profile" hantar ke Google Sheet
+setTimeout(() => {
+  try { syncSaveFields?.(); } catch(_) {}
+  try { (window.sendToSheetSafe || window.sendToSheet)?.(); } catch(_) {}
+}, 0);
+
         }
 
         // Timeline System
@@ -2312,224 +2719,7 @@ window.fieldsData = fieldsData; // make globally accessible
             
             const previewWindow = window.open('', '_blank');
             previewWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>CV Preview - ${cvData.name}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
-                        .header { display: flex; align-items: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                        .profile-section { flex: 1; }
-                        .profile-picture { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-left: 20px; border: 3px solid #333; }
-                        .no-picture { width: 120px; height: 120px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin-left: 20px; border: 3px solid #333; color: #666; font-size: 12px; }
-                        .section { margin-bottom: 25px; }
-                        .section h3 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px; }
-                        .contact-info { margin-top: 10px; }
-                        .contact-info span { display: block; margin-bottom: 5px; }
-                        .skills-list, .achievements-list, .activities-list { display: flex; flex-wrap: wrap; gap: 8px; }
-                        .skill-tag, .achievement-tag, .activity-tag { background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 15px; font-size: 14px; }
-                        .goals-section { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; }
-                        @media print { body { margin: 0; padding: 15px; } .no-print { display: none; } }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <div class="profile-section">
-                            <h1 style="margin: 0; font-size: 2.5em;">${cvData.name}</h1>
-                            <div class="contact-info">
-                                <span><strong>Email:</strong> ${cvData.email}</span>
-                                ${cvData.phone ? `<span><strong>Phone:</strong> ${cvData.phone}</span>` : ''}
-                                ${cvData.location ? `<span><strong>Location:</strong> ${cvData.location}</span>` : ''}
-                            </div>
-                        </div>
-                        ${cvData.profilePicture ? 
-                            `<img src="${cvData.profilePicture}" alt="Profile Picture" class="profile-picture">` : 
-                            `<div class="no-picture">No Photo</div>`
-                        }
-                    </div>
-                    
-                    ${cvData.summary ? `
-                    <div class="section">
-                        <h3>Professional Summary</h3>
-                        <p>${cvData.summary}</p>
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.goals.content ? `
-                    <div class="section">
-                        <h3>Career Goals (${cvData.goals.horizon || '5'} Years)</h3>
-                        <div class="goals-section">
-                            ${cvData.goals.isCustom ? 
-                                `<div style="white-space: pre-line;">${cvData.goals.customContent || cvData.goals.content}</div>` :
-                                cvData.goals.content
-                            }
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.educationEntries && cvData.educationEntries.length > 0 ? `
-                    <div class="section">
-                        <h3>Education</h3>
-                        ${cvData.educationEntries.map(edu => `
-                            <div style="margin-bottom: 15px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <strong>${edu.degree}</strong>
-                                    <span style="color: #666; font-size: 14px;">${edu.startYear} - ${edu.endYear}</span>
-                                </div>
-                                <div style="color: #666; font-style: italic;">${edu.institution}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    ${(cvData.selectedTechnicals && cvData.selectedTechnicals.length > 0) || 
-                      (cvData.selectedSofts && cvData.selectedSofts.length > 0) || 
-                      (cvData.selectedLanguages && cvData.selectedLanguages.length > 0) ? `
-                    <div class="section">
-                        <h3>Skills</h3>
-                        ${cvData.selectedTechnicals && cvData.selectedTechnicals.length > 0 ? `
-                            <div style="margin-bottom: 15px;">
-                                <strong>Technical Skills:</strong>
-                                <div class="skills-list" style="margin-top: 8px;">
-                                    ${cvData.selectedTechnicals.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        ${cvData.selectedSofts && cvData.selectedSofts.length > 0 ? `
-                            <div style="margin-bottom: 15px;">
-                                <strong>Soft Skills:</strong>
-                                <div class="skills-list" style="margin-top: 8px;">
-                                    ${cvData.selectedSofts.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        ${cvData.selectedLanguages && cvData.selectedLanguages.length > 0 ? `
-                            <div>
-                                <strong>Languages:</strong>
-                                <div class="skills-list" style="margin-top: 8px;">
-                                    ${cvData.selectedLanguages.map(lang => `<span class="skill-tag">${lang}</span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.experienceEntries && cvData.experienceEntries.length > 0 ? `
-                    <div class="section">
-                        <h3>Experience</h3>
-                        ${cvData.experienceEntries.map(exp => `
-                            <div style="margin-bottom: 20px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <strong>${exp.position}</strong>
-                                    <span style="color: #666; font-size: 14px;">${formatDate(exp.startDate)} - ${exp.endDate === 'Present' ? 'Present' : formatDate(exp.endDate)}</span>
-                                </div>
-                                <div style="color: #666; font-style: italic; margin-bottom: 8px;">${exp.company}</div>
-                                ${exp.description ? `<p style="margin: 0; line-height: 1.4;">${exp.description}</p>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.selectedAchievements && cvData.selectedAchievements.length > 0 ? `
-                    <div class="section">
-                        <h3>Achievements & Awards</h3>
-                        <div class="achievements-list">
-                            ${cvData.selectedAchievements.map(achievement => `<span class="achievement-tag">${achievement}</span>`).join('')}
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.selectedExtracurriculars && cvData.selectedExtracurriculars.length > 0 ? `
-                    <div class="section">
-                        <h3>Extracurricular Activities</h3>
-                        <div class="activities-list">
-                            ${cvData.selectedExtracurriculars.map(activity => `<span class="activity-tag">${activity}</span>`).join('')}
-                        </div>
-                    </div>
-                    ` : ''}
-                
-<script>
-(function(){
-  function waitForData(cb, tries=40){
-    if ((window.fieldsData) && window.state && state.profile) { cb(); return; }
-    if (tries <= 0) { cb(); return; }
-    setTimeout(()=>waitForData(cb, tries-1), 200);
-  }
-  function run(){
-    (window.updatePassportEnhanced || window.updatePassport)?.();
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    const p = document.getElementById('passport');
-    if (p && !p.classList.contains('hidden')) {
-      waitForData(run);
-    }
-  });
-})();
-<\/script>
 
-
-<script>
-(function(){
-  function resolveName(){
-    try{
-      if (window.state && state.profile && state.profile.name) return state.profile.name;
-      if (window.state && state.auth && state.auth.name) return state.auth.name;
-      const ls = localStorage.getItem('regName'); if (ls) return ls;
-      const email = (state && state.profile && state.profile.email) || localStorage.getItem('regEmail') || '';
-      if (email && email.includes('@')) return email.split('@')[0];
-    }catch(e){}
-    return '-';
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    const nm = resolveName();
-    const header = document.getElementById('headerRegName'); if (header) header.textContent = nm;
-    const pn = document.getElementById('passportName'); if (pn) pn.textContent = nm;
-  });
-})();
-<\/script>
-
-
-<script>
-(function(){
-  function doLogout(){
-    try {
-      if (window.state) {
-        state.auth = { isLoggedIn: false };
-        try { localStorage.removeItem('regName'); } catch(e){}
-        try { localStorage.removeItem('regEmail'); } catch(e){}
-        if (typeof saveState === 'function') saveState();
-      }
-    } catch(e){}
-    // Navigate to cover/login
-    if (typeof showScreen === 'function') {
-      showScreen('cover');
-    } else if (typeof switchTo === 'function') {
-      switchTo('cover');
-    } else {
-      // Fallback: hide all .screen and show #cover
-      try {
-        document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-        const cover = document.getElementById('cover'); if (cover) cover.classList.remove('hidden');
-      } catch(e) {}
-    }
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    const btn = document.getElementById('logoutBtn');
-    if (btn && !btn.dataset.boundLogout){
-      btn.addEventListener('click', function(e){ e.preventDefault(); doLogout(); });
-      btn.dataset.boundLogout = '1';
-    }
-  });
-  // Expose for reuse
-  window.doLogout = doLogout;
-})();
-<\/script>
-
-
-
-
-</body>
-                </html>
             `);
             previewWindow.document.close();
         }
@@ -2557,9 +2747,11 @@ window.fieldsData = fieldsData; // make globally accessible
             };
             
             state.cv = cvData;
+            try { saveToGoogleSheet(); } catch(e){}
             state.missions.cvBuilt = true;
             
             saveState();
+            setTimeout(() => { try { syncSaveFields(); } catch (e) { console.warn('syncSaveFields fail', e); } }, 0);
             
             // Check if both goals and CV are completed for advanced badge
             if (state.missions.goalsSaved) {
@@ -2629,6 +2821,7 @@ window.fieldsData = fieldsData; // make globally accessible
             saveState();
             updateHamburgerLocks();
             updateFooterLocks();
+            setTimeout(() => { try { syncSaveFields(); } catch (e) { console.warn('syncSaveFields fail', e); } }, 0);
             
             // Update all cards to show selection
             Object.keys(fieldsData).forEach(key => {
@@ -2676,6 +2869,7 @@ window.fieldsData = fieldsData; // make globally accessible
             saveState();
             updateHamburgerLocks();
             updateFooterLocks();
+            setTimeout(() => { try { syncSaveFields(); } catch (e) { console.warn('syncSaveFields fail', e); } }, 0);
             
             // Update all pathway cards
             ['Academic', 'Career', 'Entrepreneur'].forEach(p => {
@@ -2951,6 +3145,8 @@ function renderPassportTvetmara() {
     li.innerHTML = `<span class="font-medium">${program}</span><br><span class="text-gray-500">${institution}</span>`;
     progList.appendChild(li);
   });
+  try { saveToGoogleSheet(); } catch(e) {}
+  try { saveToGoogleSheet(); } catch(e) {}
 }
 
 
@@ -3107,6 +3303,7 @@ if (iconEl) iconEl.textContent = field.icon || '🎓';
 
         // UI Updates
         function updateUI() {
+          updateHeaderName();
             // Update any UI elements that depend on state
         }
 
@@ -3256,6 +3453,7 @@ if (iconEl) iconEl.textContent = field.icon || '🎓';
             }
             
             saveState();
+            setTimeout(() => { try { syncSaveFields(); } catch (e) { console.warn('syncSaveFields fail', e); } }, 0);
             
             // Display result
             displayCareerQuizResult(matchedField);
@@ -4238,6 +4436,95 @@ window.SenaraiTvetmaraProgram = window.SenaraiTvetmaraProgram || {
 })();
 
 
+
+function syncSaveFields() {
+  const name   = (state.profile?.name  || state.auth?.name  || '').trim();
+  const email  = (state.profile?.email || state.auth?.email || '').trim();
+  const dob    =  state.profile?.dob    || '';
+  const school =  state.profile?.school || '';
+  const grade  =  state.profile?.grade  || '';
+
+  const fieldKey = state.profile?.field || '';
+  const suitableFieldKey = state.careerQuiz?.result || '';
+
+  const toTitle = s => (s||'').toString()
+      .replace(/[-_]/g,' ')
+      .replace(/\b\w/g, c => c.toUpperCase()).trim();
+
+  const selectedFieldName =
+    fieldKey && window.fieldsData?.[fieldKey]
+      ? (window.fieldsData[fieldKey].name || toTitle(fieldKey))
+      : toTitle(fieldKey);
+
+  const suitableFieldName =
+    suitableFieldKey && window.fieldsData?.[suitableFieldKey]
+      ? (window.fieldsData[suitableFieldKey].name || toTitle(suitableFieldKey))
+      : toTitle(suitableFieldKey);
+
+  const institution =
+    fieldKey && window.fieldsData?.[fieldKey]
+      ? (window.fieldsData[fieldKey].institution || '')
+      : '';
+
+  const normPathway = p => {
+    const s = (p||'').toString().toLowerCase().trim();
+    if (['akademik','academic'].includes(s)) return 'Academic';
+    if (['career','kerjaya','industry','industri'].includes(s)) return 'Career';
+    if (['entrepreneur','usahawan','business','bisnes','entrepreneurship'].includes(s)) return 'Entrepreneur';
+    return toTitle(p);
+  };
+  const pathway = normPathway(state.pathway);
+
+  // Kira progress/marks secara selamat
+  const s1 = state.missions?.s1 || [];
+  const s2 = state.missions?.s2 || [];
+  const bool = x => !!x;
+
+  let completed = 0, total = 11, marks = 0;
+  completed += s1.filter(Boolean).length;
+  completed += s2.filter(Boolean).length;
+  if (bool(state.missions?.explorerCompleted)) completed++;
+  if (bool(state.missions?.fieldSelected))     completed++;
+  if (bool(state.missions?.pathwaySelected))   completed++;
+  if (bool(state.missions?.goalsSaved))        completed++;
+  if (bool(state.missions?.cvBuilt))           completed++;
+
+  marks += s1.filter(Boolean).length * 10;
+  marks += s2.filter(Boolean).length * 10;
+  if (bool(state.missions?.explorerCompleted)) marks += 10;
+  if (bool(state.missions?.fieldSelected))     marks += 5;
+  if (bool(state.missions?.pathwaySelected))   marks += 5;
+  if (bool(state.missions?.goalsSaved))        marks += 15;
+  if (bool(state.missions?.cvBuilt))           marks += 25;
+
+  const overallPct = Math.round((completed / total) * 100);
+
+  const badges = {
+    Beginner:     s1.length>0 && s1.every(Boolean),
+    Intermediate: s2.length>0 && s2.every(Boolean),
+    Advanced:     !!(state.missions?.goalsSaved && state.missions?.cvBuilt),
+    Explorer:     !!state.missions?.explorerCompleted
+  };
+
+  // Helper set
+  const setVal = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.value = v ?? '';
+  };
+
+  // Isi hidden inputs
+  setVal('saveSuitableField', suitableFieldName || '-');
+  setVal('saveSelectedField', selectedFieldName || '-');
+  setVal('savePathway',       pathway || '-');
+  setVal('saveInstitution',   institution || '-');
+  setVal('saveOverall',       String(overallPct));
+  setVal('saveTotalMarks',    String(marks));
+  setVal('saveMissionDone',   String(completed));     // jika anda mahu "7/11" tukar ke `${completed}/${total}`
+  setVal('saveBadgesJson',    JSON.stringify(badges));
+}
+
+window.syncSaveFields = syncSaveFields;
+
 /* --- Split by ChatGPT --- */
 
 
@@ -4275,6 +4562,163 @@ window.SenaraiTvetmaraProgram = window.SenaraiTvetmaraProgram || {
     if (fk && fd[fk]) return fd[fk];
     return Object.values(fd).find(v => (v?.name||'').toLowerCase()===(fk||'').toLowerCase()) || null;
   }
+
+  // ===== SYNC all values to [data-save] inputs =====
+/*function syncSaveFields() {
+  // 1) Sumber nama/emel/sekolah/tingkatan dari state
+  const name  = (state.profile?.name || state.auth?.name || '').trim();
+  const email = (state.profile?.email || state.auth?.email || '').trim();
+  const dob = state.profile?.dob || '';
+  const school = state.profile?.school || '';
+  const grade  = state.profile?.grade  || '';
+
+  // 2) StudentID: guna input jika ada, jika tiada -> auto dari prefix email
+  const studentIdEl = document.getElementById('studentId');
+  const studentId = (studentIdEl?.value?.trim()) || (email.includes('@') ? email.split('@')[0] : '');
+
+  // 3) Field/Pathway/Institution
+  const fieldKey = state.profile?.field || '';
+  const selectedFieldName = fieldKey ? (window.fieldsData?.[fieldKey]?.name || fieldKey) : '';
+  const institution = fieldKey ? (window.fieldsData?.[fieldKey]?.institution || '') : '';
+  const suitableFieldKey = state.careerQuiz?.result || '';
+  const suitableFieldName = suitableFieldKey ? (window.fieldsData?.[suitableFieldKey]?.name || suitableFieldKey) : '';
+  const pathway = state.pathway || '';
+
+  // 4) Marks/Progress/Badges
+  //    — guna pengiraan yang sedia anda guna di dashboard/learning
+  let completed = 0, total = 11, marks = 0;
+  completed += state.missions.s1.filter(Boolean).length;
+  completed += state.missions.s2.filter(Boolean).length;
+  if (state.missions.explorerCompleted) completed++;
+  if (state.missions.fieldSelected)     completed++;
+  if (state.missions.pathwaySelected)   completed++;
+  if (state.missions.goalsSaved)        completed++;
+  if (state.missions.cvBuilt)           completed++;
+
+  marks += state.missions.s1.filter(Boolean).length * 10;
+  marks += state.missions.s2.filter(Boolean).length * 10;
+  if (state.missions.explorerCompleted) marks += 10;
+  if (state.missions.fieldSelected)     marks += 5;
+  if (state.missions.pathwaySelected)   marks += 5;
+  if (state.missions.goalsSaved)        marks += 15;
+  if (state.missions.cvBuilt)           marks += 25;
+
+  const overallPct = Math.round((completed / total) * 100);
+
+  const badges = {
+    Beginner:     state.missions.s1.every(Boolean),
+    Intermediate: state.missions.s2.every(Boolean),
+    Advanced:     !!(state.missions.goalsSaved && state.missions.cvBuilt),
+    Explorer:     !!state.missions.explorerCompleted
+  };
+
+  // 5) Isi ke semua elemen [data-save]
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+  set('studentId',        studentId);           // kalau anda guna input sebenar
+  set('profileName',      name);
+  set('profileEmail',     email);
+  set('profileDob',       dob);
+  set('profileSchool',    school);
+  set('profileGrade',     grade);
+
+  set('saveSuitableField', suitableFieldName);
+  set('saveSelectedField', selectedFieldName);
+  set('savePathway',       pathway);
+  set('saveInstitution',   institution);
+  set('saveOverall',       String(overallPct));
+  set('saveTotalMarks',    String(marks));
+  set('saveMissionDone',   `${completed}/${total}`);
+  set('saveBadgesJson',    JSON.stringify(badges));
+}*/
+
+// PANGGIL fungsi ini selepas setiap perubahan penting
+// Contoh tambahan satu baris di hujung fungsi sedia ada:
+///  - register()       -> selepas saveState()
+///  - saveProfile()    -> selepas saveState()
+///  - selectField()    -> selepas saveState()
+///  - selectPathway()  -> selepas saveState()
+///  - submitCareerQuiz()-> selepas saveState()
+///  - saveCV()         -> selepas saveState()
+
+/*function syncSaveFields() {
+  // 0) Helper
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+  const safeArr = a => Array.isArray(a) ? a : [];
+  const title = s => (s||'').toString().replace(/[-_]/g,' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+
+  // 1) Sumber asas
+  const name   = (state?.profile?.name  || state?.auth?.name  || '').trim();
+  const email  = (state?.profile?.email || state?.auth?.email || '').trim();
+  const dob    = state?.profile?.dob    || '';
+  const school = state?.profile?.school || '';
+  const grade  = state?.profile?.grade  || '';
+
+  const studentIdEl = document.getElementById('studentId');
+  const studentId = (studentIdEl?.value?.trim()) || (email.includes('@') ? email.split('@')[0] : '');
+
+  // 2) Field / SuitableField / Institution / Pathway
+  const fieldKey           = state?.profile?.field || '';
+  const suitableFieldKey   = state?.careerQuiz?.result || '';
+  const selectedFieldName  = fieldKey && (window.fieldsData?.[fieldKey])
+      ? (window.fieldsData[fieldKey].name || title(fieldKey)) : title(fieldKey);
+  const suitableFieldName  = suitableFieldKey && (window.fieldsData?.[suitableFieldKey])
+      ? (window.fieldsData[suitableFieldKey].name || title(suitableFieldKey)) : title(suitableFieldKey);
+  const institution        = fieldKey && (window.fieldsData?.[fieldKey])
+      ? (window.fieldsData[fieldKey].institution || '') : '';
+  const pathway            = state?.pathway || '';
+
+  // 3) Missions/marks/progress (semua guard)
+  const s1 = safeArr(state?.missions?.s1);
+  const s2 = safeArr(state?.missions?.s2);
+  const m  = state?.missions || {};
+  let completed = 0, total = 11, marks = 0;
+
+  completed += s1.filter(Boolean).length;
+  completed += s2.filter(Boolean).length;
+  if (m.explorerCompleted) completed++;
+  if (m.fieldSelected)     completed++;
+  if (m.pathwaySelected)   completed++;
+  if (m.goalsSaved)        completed++;
+  if (m.cvBuilt)           completed++;
+
+  marks += s1.filter(Boolean).length * 10;
+  marks += s2.filter(Boolean).length * 10;
+  if (m.explorerCompleted) marks += 10;
+  if (m.fieldSelected)     marks += 5;
+  if (m.pathwaySelected)   marks += 5;
+  if (m.goalsSaved)        marks += 15;
+  if (m.cvBuilt)           marks += 25;
+
+  const overallPct = Math.round((completed / total) * 100);
+
+  const badges = {
+    Beginner:     s1.length === 3 && s1.every(Boolean),
+    Intermediate: s2.length === 3 && s2.every(Boolean),
+    Advanced:     !!(m.goalsSaved && m.cvBuilt),
+    Explorer:     !!m.explorerCompleted
+  };
+
+  // 4) Isi ke hidden/input [data-save] jika ada
+  set('studentId',        studentId);
+  set('profileName',      name);
+  set('profileEmail',     email);
+  set('profileDob',       dob);
+  set('profileSchool',    school);
+  set('profileGrade',     grade);
+
+  set('saveSuitableField', suitableFieldName || '-');
+  set('saveSelectedField', selectedFieldName || '-');
+  set('savePathway',       pathway || '-');
+  set('saveInstitution',   institution || '-');
+  set('saveOverall',       String(overallPct));
+  set('saveTotalMarks',    String(marks));
+  set('saveMissionDone',   `${completed}/${total}`);
+  set('saveBadgesJson',    JSON.stringify(badges));
+}*/
+
+// ===== Isi nilai ke [data-save] untuk 8 medan Sheet =====
+
+
 
   // ---------- Nama segera (hero + header) ----------
   function paintName(){
@@ -5054,6 +5498,9 @@ function lockCard(card, locked, type) {
     };
   }
 
+  //KENA SEMAK BALIK CODE KAT BAWAH NI. KEMUNGKINANAN MENGGANGGU CODE.GS
+  //Ganti sementara nak cuba
+
   window.onSaveToSheet = async function(){
     try {
       const payload = window.buildStudentPayload();
@@ -5075,6 +5522,9 @@ function lockCard(card, locked, type) {
     }
   };
 
+
+  
+
   document.addEventListener("DOMContentLoaded", function(){
     const btn = document.getElementById("save-to-sheet-btn");
     if (btn) btn.addEventListener("click", window.onSaveToSheet);
@@ -5082,106 +5532,596 @@ function lockCard(card, locked, type) {
 })();
 
 /* === TVETMARA PATCH: DOM-first pathway/field + reliable payload === */
-(function(){
+(function () {
   'use strict';
-  const PATHWAY_ALIAS = {academic:'academic', akademik:'academic', career:'career', kerjaya:'career', industry:'career', industri:'career', entrepreneur:'entrepreneur', entrepreneurship:'entrepreneur', usahawan:'entrepreneur', business:'entrepreneur', bisnes:'entrepreneur'};
-  const FIELD_ALIAS = {electronics:'electronics', electronic:'electronics', elektronik:'electronics', electrical:'electrical', elektrik:'electrical', power:'electrical', iot:'iot-robotics', robotics:'iot-robotics', automation:'iot-robotics', manufacturing:'manufacturing', pembuatan:'manufacturing', 'oil-gas':'oil-gas','oil-and-gas':'oil-gas','oilandgas':'oil-gas','minyak-dan-gas':'oil-gas', 'bio-medical':'bio-medical','biomedical':'bio-medical','bio-medik':'bio-medical','medical':'bio-medical'};
+
+  // --- Normalizers & helpers ---
+  const PATHWAY_ALIAS = {
+    academic:'academic', akademik:'academic',
+    career:'career', kerjaya:'career', industry:'career', industri:'career',
+    entrepreneur:'entrepreneur', entrepreneurship:'entrepreneur', usahawan:'entrepreneur', business:'entrepreneur', bisnes:'entrepreneur'
+  };
+  const FIELD_ALIAS = {
+    electronics:'electronics', electronic:'electronics', elektronik:'electronics',
+    electrical:'electrical', elektrik:'electrical',
+    iot:'iot-robotics', robotics:'iot-robotics', automation:'iot-robotics',
+    manufacturing:'manufacturing', pembuatan:'manufacturing'
+  };
   const slug = s => (s||'').toString().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
   const norm = (s,map)=>{ const g=slug(s); if(map[g]) return map[g]; for(const k of Object.keys(map)){ if(g.includes(k)) return map[k]; } return g||''; };
   const text = sel => (document.querySelector(sel)?.textContent || '').trim();
   const val  = sel => (document.querySelector(sel)?.value || '').trim();
-  const pick = (...arr) => { for (const v of arr){ if (v!==undefined && v!==null && String(v).trim()!=='') return v; } return ''; };
 
-  document.addEventListener('click',(e)=>{
+  // --- Listeners: update state bila pilih pathway/field ---
+  document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-pathway]');
     if (!el) return;
     const key = norm(el.dataset.pathway || el.dataset.key || el.getAttribute('data-pathway-key') || el.textContent, PATHWAY_ALIAS);
     window.state = window.state || {};
     state.profile = Object.assign({}, state.profile, { pathway: key });
-    try{ localStorage.setItem('nextgen_state', JSON.stringify(state)); }catch(_){}
-    document.querySelectorAll('[data-pathway]').forEach(x=>x.classList.toggle('selected', x===el));
-    if (typeof showToast==='function') showToast('Pathway selected: ' + key);
+    try { localStorage.setItem('nextgen_state', JSON.stringify(state)); } catch (_){}
+    document.querySelectorAll('[data-pathway]').forEach(x => x.classList.toggle('selected', x === el));
+    window.showToast && showToast('Pathway selected: ' + key);
   });
-  document.addEventListener('change',(e)=>{
-    const r=e.target;
-    if (r && r.name==='pathway'){
+
+  document.addEventListener('change', (e) => {
+    const r = e.target;
+    if (r && r.name === 'pathway') {
       const key = norm(r.value, PATHWAY_ALIAS);
       window.state = window.state || {};
       state.profile = Object.assign({}, state.profile, { pathway: key });
-      try{ localStorage.setItem('nextgen_state', JSON.stringify(state)); }catch(_){}
-      if (typeof showToast==='function') showToast('Pathway selected: ' + key);
+      try { localStorage.setItem('nextgen_state', JSON.stringify(state)); } catch (_){}
+      window.showToast && showToast('Pathway selected: ' + key);
     }
-    if (r && r.name==='field'){
+    if (r && r.name === 'field') {
       const key = norm(r.value, FIELD_ALIAS);
       window.state = window.state || {};
       state.profile = Object.assign({}, state.profile, { field: key });
-      try{ localStorage.setItem('nextgen_state', JSON.stringify(state)); }catch(_){}
-      if (typeof showToast==='function') showToast('Field selected: ' + key);
+      try { localStorage.setItem('nextgen_state', JSON.stringify(state)); } catch (_){}
+      window.showToast && showToast('Field selected: ' + key);
     }
   });
 
-  function detectPathwayDOM(){
-    const r=document.querySelector('input[name="pathway"]:checked');
+  // --- DOM-first readers ---
+  function detectPathwayDOM() {
+    const r = document.querySelector('input[name="pathway"]:checked');
     if (r?.value) return norm(r.value, PATHWAY_ALIAS);
-    const el=document.querySelector('[data-pathway].selected, [data-pathway].active, [data-pathway][aria-pressed="true"]');
-    if (el){ const key=el.dataset.pathway||el.dataset.key||el.getAttribute('data-pathway-key')||el.textContent; return norm(key, PATHWAY_ALIAS); }
-    const t = (text('#selectedPathway')||text('[data-current-pathway]')||text('#pathway'));
-    return norm(t, PATHWAY_ALIAS);
+    const el = document.querySelector('[data-pathway].selected, [data-pathway].active, [data-pathway][aria-pressed="true"]');
+    if (el) return norm(el.dataset.pathway || el.dataset.key || el.getAttribute('data-pathway-key') || el.textContent, PATHWAY_ALIAS);
+    return norm(text('#selectedPathway') || text('[data-current-pathway]') || text('#pathway'), PATHWAY_ALIAS);
   }
-  function detectFieldDOM(){
-    const r=document.querySelector('input[name="field"]:checked');
+  function detectFieldDOM() {
+    const r = document.querySelector('input[name="field"]:checked');
     if (r?.value) return norm(r.value, FIELD_ALIAS);
-    const el=document.querySelector('[data-field].selected, [data-field].active, [data-field][aria-pressed="true"]');
-    if (el){ const key=el.dataset.field||el.dataset.key||el.getAttribute('data-field-key')||el.textContent; return norm(key, FIELD_ALIAS); }
-    const t = (text('#selected-field')||text('[data-current-field]'));
-    return norm(t, FIELD_ALIAS);
+    const el = document.querySelector('[data-field].selected, [data-field].active, [data-field][aria-pressed="true"]');
+    if (el) return norm(el.dataset.field || el.dataset.key || el.getAttribute('data-field-key') || el.textContent, FIELD_ALIAS);
+    return norm(text('#selected-field') || text('[data-current-field]'), FIELD_ALIAS);
   }
 
-  function countCompleted(m){
-    try{
-      if (typeof m?.completedCount==='number') return m.completedCount;
-      let c=0; for (const v of Object.values(m||{})){ if (Array.isArray(v)) c+= v.filter(x=> x===true || (x && (x.passed===true || x.completed===true || x.status==='passed'))).length; }
+  // --- Metrics readers ---
+  function countCompleted(m) {
+    try {
+      if (typeof m?.completedCount === 'number') return m.completedCount;
+      let c = 0;
+      for (const v of Object.values(m || {})) {
+        if (Array.isArray(v)) c += v.filter(x => x === true || (x && (x.passed === true || x.completed === true || x.status === 'passed'))).length;
+      }
       return c;
-    }catch(_){ return 0; }
+    } catch (_){ return 0; }
   }
-  function overall(p,m){
-    if (typeof p?.overall==='number') return p.overall;
-    const total=(m&&m.total)?m.total:Object.values(m||{}).reduce((a,v)=>a+(Array.isArray(v)?v.length:0),0);
-    const done=countCompleted(m);
-    if (total>0) return Math.round((done/total)*100);
-    const el=document.querySelector('[data-overall-progress], #overallProgress, progress[role="progressbar"]');
-    if (el){ const raw=el.getAttribute('data-overall-progress')||el.getAttribute('value')||text('#overallProgress'); const n=Number(String(raw).replace(/[^\d.]/g,'')); if (!isNaN(n)) return n; }
+  function overall(p, m) {
+    if (typeof p?.overall === 'number') return p.overall;
+    const total = (m && m.total) ? m.total : Object.values(m || {}).reduce((a, v) => a + (Array.isArray(v) ? v.length : 0), 0);
+    const done = countCompleted(m);
+    if (total > 0) return Math.round((done / total) * 100);
+    const el = document.querySelector('[data-overall-progress], #overallProgress, progress[role="progressbar"]');
+    if (el) {
+      const raw = el.getAttribute('data-overall-progress') || el.getAttribute('value') || text('#overallProgress');
+      const n = Number(String(raw).replace(/[^\d.]/g, ''));
+      if (!isNaN(n)) return n;
+    }
     return 0;
   }
-  function totalMarks(sc){
-    if (typeof sc?.total==='number') return sc.total;
+  function totalMarks(sc) {
+    if (typeof sc?.total === 'number') return sc.total;
     const raw = text('#totalMarks, .total-marks, [data-total-marks]');
-    const n = Number(String(raw).replace(/[^\d.]/g,''));
+    const n = Number(String(raw).replace(/[^\d.]/g, ''));
     return isNaN(n) ? 0 : n;
   }
+  function readBadgesFromDOM() {
+    // Ambil id lencana dari DOM jika wujud
+    const nodes = document.querySelectorAll('[data-badge-earned="true"], .badge.earned');
+    return Array.from(nodes).map((el, i) => el.getAttribute('data-badge-id') || el.id || `badge-${i+1}`);
+  }
 
-  window.buildStudentPayload = function(){
-    try{ if (!window.state || Object.keys(window.state).length===0){ const saved=localStorage.getItem('nextgen_state'); if (saved) window.state=JSON.parse(saved); } }catch(_){}
-    const s=window.state||{}; const prof=s.profile||{}; const car=s.career||{}; const pass=s.passport||{}; const prog=s.progress||{}; const sc=s.scores||{}; const mis=s.missions||{}; const badges=s.badges||{};
+  /* ========= AUTO FORM COLLECTOR ========= */
+  function collectFormData(root = document) {
+    const out = {};
+    const add = (key, val) => {
+      if (!key) return;
+      if (out.hasOwnProperty(key)) {
+        if (Array.isArray(out[key])) out[key].push(val);
+        else out[key] = [out[key], val];
+      } else out[key] = val;
+    };
+    const fields = root.querySelectorAll('input, select, textarea, [contenteditable][data-save]');
+    fields.forEach(el => {
+      if (el.matches('[data-nosave]')) return;
+      if (el.type === 'hidden') return;
+      const key = el.dataset.save || el.name || el.id || '';
+      if (!key) return;
+
+      if (el.matches('[contenteditable]')) { add(key, el.innerText.trim()); return; }
+      if (el.tagName === 'SELECT') {
+        if (el.multiple) add(key, Array.from(el.selectedOptions).map(o => o.value));
+        else add(key, el.value);
+        return;
+      }
+      if (el.type === 'checkbox') {
+        if (el.name) { if (el.checked) add(key, el.value || true); }
+        else add(key, !!el.checked);
+        return;
+      }
+      if (el.type === 'radio') { if (el.checked) add(key, el.value); return; }
+      add(key, (el.value ?? '').trim());
+    });
+    return out;
+  }
+  function mergeSmart(target, extra) {
+    for (const [k, v] of Object.entries(extra)) {
+      const empty = v === '' || v == null || (Array.isArray(v) && v.length === 0);
+      if (!empty && (target[k] === undefined || target[k] === '')) target[k] = v;
+    }
+    return target;
+  }
+
+  // --- Build payload (DOM-first + fallbacks) ---
+  window.buildStudentPayload = function () {
+    try {
+      if (!window.state || !Object.keys(window.state).length) {
+        const saved = localStorage.getItem('nextgen_state');
+        if (saved) window.state = JSON.parse(saved);
+      }
+    } catch (_){}
+
+    const s = window.state || {};
+    const prof = s.profile || {};
+    const car  = s.career || {};
+    const pass = s.passport || {};
+    const prog = s.progress || {};
+    const sc   = s.scores || {};
+    const mis  = s.missions || {};
+    const badgesState = s.badges || {};
+
     const pathway = detectPathwayDOM() || norm(prof.pathway, PATHWAY_ALIAS);
     const field   = detectFieldDOM()   || norm(prof.field, FIELD_ALIAS);
+
     const payload = {
       token: (window.GAS_CONFIG && GAS_CONFIG.token) || '',
-      studentId:   (prof.studentId || prof.id || val('#studentId') || text('#studentId') || ''),
-      name:        (prof.name || val('#cvFullName') || text('#cvFullName') || val('#profileName') || ''),
-      email:       (prof.email || val('#cvEmail') || text('#cvEmail') || val('#profileEmail') || ''),
-      school:      (prof.school || val('#school') || text('#school') || ''),
-      gradeLevel:  (prof.grade || prof.gradeLevel || val('#gradeLevel') || text('#gradeLevel') || ''),
-      suitableField: (car.suitableField || text('#career-field') || val('#career-field') || ''),
+      // asas
+      studentId:  (prof.studentId || prof.id || val('#studentId') || ''),
+      name:       (prof.name || val('#cvFullName') || ''),
+      email:      (prof.email || val('#cvEmail') || ''),
+      school:     (prof.school || val('#school') || ''),
+      gradeLevel: (prof.grade || prof.gradeLevel || val('#gradeLevel') || ''),
+      // pilihan & institusi
+      suitableField: (car.suitableField || ''),
       selectedField: field,
       pathway: pathway,
-      institution: (pass.institution || text('#institution') || val('#institution') || ''),
+      institution: (pass.institution || val('#institution') || ''),
+      // metrik
       overallProgress: Number(overall(prog, mis) || 0),
-      totalMarks: Number(totalMarks(sc) || 0),
+      totalMarks:      Number(totalMarks(sc) || 0),
       missionComplete: Number(countCompleted(mis) || 0),
-      earnedBadges: Array.isArray(badges?.earned) ? badges.earned : (Array.isArray(badges) ? badges : (badges && typeof badges==='object' ? Object.keys(badges).filter(k=>!!badges[k]) : Array.from(document.querySelectorAll('[data-badge-earned=\"true\"], .badge.earned')).map((_,i)=>`badge-${i+1}`)))
     };
-    console.log('[PATCH payload]', payload);
+
+    // earnedBadges: DOM → state
+    let earnedBadges = readBadgesFromDOM();
+    if (!earnedBadges.length) {
+      if (Array.isArray(badgesState?.earned)) earnedBadges = badgesState.earned;
+      else if (Array.isArray(badgesState)) earnedBadges = badgesState;
+      else if (badgesState && typeof badgesState === 'object') {
+        earnedBadges = Object.keys(badgesState).filter(k => !!badgesState[k]);
+      }
+    }
+    payload.earnedBadges = earnedBadges;
+
+    // Auto-collect semua input & gabung (tanpa overwrite nilai yang sudah ada)
+    const extra = collectFormData(document);
+    mergeSmart(payload, extra);
+    payload.form = extra; // rujukan
+
+    console.log('[PAYLOAD]', payload);
     return payload;
   };
 })();
+
+
+// === GOOGLE SHEET SAVE (GAS) ===
+// Build payload and send to Google Apps Script endpoint defined in config.js
+function computeProgressAndMarks(){
+  try {
+    let completedMissions = 0;
+    completedMissions += (state.missions?.s1||[]).filter(Boolean).length;
+    completedMissions += (state.missions?.s2||[]).filter(Boolean).length;
+    if (state.missions?.explorerCompleted) completedMissions++;
+    if (state.missions?.fieldSelected) completedMissions++;
+    if (state.missions?.pathwaySelected) completedMissions++;
+    if (state.missions?.goalsSaved) completedMissions++;
+    if (state.missions?.cvBuilt) completedMissions++;
+
+    let totalMarks = 0;
+    totalMarks += (state.missions?.s1||[]).filter(Boolean).length * 10;
+    totalMarks += (state.missions?.s2||[]).filter(Boolean).length * 10;
+    if (state.missions?.explorerCompleted) totalMarks += 10;
+    if (state.missions?.fieldSelected) totalMarks += 5;
+    if (state.missions?.pathwaySelected) totalMarks += 5;
+    if (state.missions?.goalsSaved) totalMarks += 15;
+    if (state.missions?.cvBuilt) totalMarks += 25;
+
+    const totalTasks = 11; // selari dengan updateLearningProgress
+    let completedTasks = (state.missions?.s1||[]).filter(Boolean).length + (state.missions?.s2||[]).filter(Boolean).length;
+    if (state.missions?.explorerCompleted) completedTasks++;
+    if (state.missions?.fieldSelected) completedTasks++;
+    if (state.missions?.pathwaySelected) completedTasks++;
+    if (state.missions?.goalsSaved) completedTasks++;
+    if (state.missions?.cvBuilt) completedTasks++;
+    const overallProgress = Math.round((completedTasks/totalTasks)*100);
+
+    const earnedBadges = [];
+    if ((state.missions?.s1||[]).length===3 && state.missions.s1.every(Boolean)) earnedBadges.push('Beginner');
+    if ((state.missions?.s2||[]).length===3 && state.missions.s2.every(Boolean)) earnedBadges.push('Intermediate');
+    if (state.missions?.goalsSaved && state.missions?.cvBuilt) earnedBadges.push('Advanced');
+    if (state.missions?.explorerCompleted) earnedBadges.push('Explorer');
+
+    const missionComplete = `s1:${(state.missions?.s1||[]).filter(Boolean).length}/3,s2:${(state.missions?.s2||[]).filter(Boolean).length}/3,goals:${state.missions?.goalsSaved?1:0},cv:${state.missions?.cvBuilt?1:0},explorer:${state.missions?.explorerCompleted?1:0}`;
+
+    return { overallProgress, totalMarks, missionComplete, earnedBadges };
+  } catch (e) {
+    return { overallProgress: 0, totalMarks: 0, missionComplete: '', earnedBadges: [] };
+  }
+}
+
+function buildPassportRow(){
+  const email = (state.profile?.email||'').trim();
+  const studentId = (state.profile?.studentId) || (email.includes('@') ? email.split('@')[0] : '');
+  const name = state.profile?.name || '';
+  const school = state.profile?.school || '';
+  const grade = state.profile?.grade || '';
+  const selectedFieldKey = state.profile?.field || '';
+  const selectedFieldName = (window.fieldsData && selectedFieldKey && window.fieldsData[selectedFieldKey]) ? window.fieldsData[selectedFieldKey].name : selectedFieldKey;
+  const pathway = state.pathway || '';
+  const suitableFieldKey = state.careerQuiz?.result || '';
+  const suitableFieldName = (window.fieldsData && suitableFieldKey && window.fieldsData[suitableFieldKey]) ? window.fieldsData[suitableFieldKey].name : suitableFieldKey;
+  const institution = (selectedFieldKey && window.fieldsData && window.fieldsData[selectedFieldKey]) ? (window.fieldsData[selectedFieldKey].institution||'') : '';
+
+  const m = computeProgressAndMarks();
+
+  return {
+    Timestamp: new Date().toISOString(), // boleh guna di client; atau biar GAS guna server time
+    StudentID: studentId,
+    Name: name,
+    Email: email,
+    School: school,
+    GradeLevel: grade,
+    SuitableField: suitableFieldName || '-',
+    SelectedField: selectedFieldName || '-',
+    Pathway: pathway || '-',
+    Institution: institution || '-',
+    OverallProgress: m.overallProgress,
+    TotalMarks: m.totalMarks,
+    MissionComplete: m.missionComplete,
+    EarnedBadgesJson: JSON.stringify(m.earnedBadges)
+  };
+}
+
+async function saveToGoogleSheet(customRow){
+  const row = customRow || buildPassportRow();
+  const cfg = (window.GAS_CONFIG || {});
+  if (!cfg.endpoint) { alert('GAS endpoint not configured.'); return; }
+  try {
+    const res = await fetch(cfg.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: cfg.token||'', action: 'savePassport', data: row })
+    });
+    const data = await res.json().catch(()=>({ ok:false, message:'Invalid JSON' }));
+    if (res.ok && (data.ok || data.status==='ok')) {
+      alert('Saved to Google Sheet ✅');
+    } else {
+      alert('Save failed ❌: ' + (data.message || res.statusText));
+    }
+  } catch (e) {
+    alert('Save error ❌: ' + (e && e.message ? e.message : e));
+  }
+}
+
+// Auto-inject a "Save to My Passport" button on the #passport screen if missing
+function ensurePassportSaveButton(){
+  const passport = document.getElementById('passport');
+  if (!passport) return;
+  const mainCard = passport.querySelector('.bg-white.rounded-lg.shadow-lg.p-8');
+  if (!mainCard) return;
+  if (mainCard.querySelector('#saveToSheetBtn')) return; // already exists
+  const btn = document.createElement('button');
+  btn.id = 'saveToSheetBtn';
+  btn.className = 'mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold';
+  btn.textContent = 'Save to My Passport';
+  btn.addEventListener('click', function(){ saveToGoogleSheet(); });
+  mainCard.appendChild(btn);
+}
+
+function collectSaveData() {
+  const data = {};
+  document.querySelectorAll('[data-save]').forEach(el => {
+    const key = el.getAttribute('data-save');
+    const val = (el.type === 'checkbox') ? (el.checked ? 'TRUE' : 'FALSE') : (el.value ?? el.textContent ?? '');
+    data[key] = val;
+  });
+  return data;
+}
+
+/*async function sendToSheet() {
+  try {
+    syncSaveFields(); // pastikan latest
+    const payload = {
+      token:  window.GAS_CONFIG?.token,
+      action: 'savePassport',
+      data:   collectSaveData()
+    };
+    const res = await fetch(window.GAS_CONFIG?.endpoint, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.message || 'Failed to save');
+    alert('Saved to Google Sheet!');
+  } catch (e) {
+    alert('Save error: ' + e.message);
+  }
+}*/
+
+async function sendToSheet(){
+  // 0) Pastikan nilai hidden terisi
+  try { if (typeof window.syncSaveFields === 'function') window.syncSaveFields(); } catch(e){ console.warn('syncSaveFields:', e); }
+
+  // 1) Semak config
+  const { endpoint, token } = window.GAS_CONFIG || {};
+  if (!endpoint) throw new Error('GAS endpoint not set (config.js)');
+  if (!token)    throw new Error('GAS token not set (config.js)');
+
+  // 2) Kumpul semua [data-save]
+  const data = {};
+  document.querySelectorAll('[data-save]').forEach(el=>{
+    const key = el.dataset.save;
+    const val = el.type==='checkbox' ? String(el.checked) : (el.value ?? '');
+    data[key] = val;
+  });
+
+  // 3) Hantar ke GAS — biar Content-Type default (text/plain) untuk elak preflight
+  const payload = { token, action:'savePassport', data };
+  console.log('[GAS] sending ->', endpoint, payload);
+
+  const res  = await fetch(endpoint, { method:'POST', body: JSON.stringify(payload), redirect:'follow' });
+  const text = await res.text();                // log teks mentah utk debug
+  console.log('[GAS] status', res.status, text);
+
+  // Cuba parse jika JSON
+  let json = {};
+  try { json = JSON.parse(text); } catch(_){}
+  if (!res.ok || json.ok === false) {
+    throw new Error(json.error || ('HTTP '+res.status));
+  }
+
+  alert('Saved to Google Sheet ✅');
+}
+
+
+/*function sendToSheetSafe(){
+  try { syncSaveFields(); } catch(e) { console.warn('syncSaveFields failed', e); }
+  // elak hantar kalau endpoint tak diisi
+  if (!window.GAS_CONFIG?.endpoint) {
+    alert('GAS endpoint is not set (config.js).');
+    return;
+  }
+  try { sendToSheet(); } catch (e) { console.error(e); alert('Save error: ' + e.message); }
+}*/
+
+//TUTUP KEJAP SEBAB NAK TEST YANG BARU KAT BAWAH TU
+
+function sendToSheetSafe(){
+  try {
+    if (typeof window.syncSaveFields === 'function') {
+      window.syncSaveFields();            // isi hidden inputs
+    } else {
+      console.warn('syncSaveFields missing; proceed without it');
+    }
+  } catch (e) {
+    console.warn('syncSaveFields failed:', e);
+  }
+
+  try {
+    return sendToSheet();                 // fungsi hantar ke GAS yang sedia ada
+  } catch (e) {
+    alert('Save error: ' + (e.message || e));
+  }
+}
+
+/*function sendToSheetSafe(){
+  return sendToSheet().catch(e => {
+    console.error(e);
+    alert('Save error: ' + (e.message || e));
+  });
+}*/
+
+
+
+
+function updateHeaderName() {
+  const nm = (state.profile?.name || state.auth?.name || '').trim()
+           || (state.profile?.email?.split('@')[0] || '');
+  const el = document.getElementById('headerRegName');
+  if (el) el.textContent = nm || '-';
+}
+
+// Panggilan disyorkan:
+/// - di akhir register()
+/// - di akhir login()
+/// - di akhir saveProfile()
+/// - dalam init() / updateUI()
+
+
+// === Auto save snapshot to Google Sheet (cooldown 2s) ===
+/*let __sheetCooldownUntil = 0;
+function autoSaveToSheet(reason){
+  const now = Date.now();
+  if (now < __sheetCooldownUntil) return;      // throttle supaya tak spam baris
+  __sheetCooldownUntil = now + 2000;
+
+  try { saveState && saveState(); } catch(_) {}
+  try { typeof syncSaveFields === 'function' && syncSaveFields(); } catch(e){ console.warn('syncSaveFields', e); }
+
+  // guna fungsi hantar yang sedia ada
+  try { 
+    if (typeof sendToSheetSafe === 'function') return sendToSheetSafe();
+    if (typeof sendToSheet === 'function')     return sendToSheet();
+  } catch(e){
+    console.warn('sendToSheet failed', e);
+  }
+}
+window.autoSaveToSheet = autoSaveToSheet;
+*/
+
+
+// === Auto save snapshot setiap kali saveState() menukar perkara penting ===
+/*(function(){
+  // pastikan util hantar wujud
+  function autoSaveToSheet(){
+    const now = Date.now();
+    if (autoSaveToSheet._until && now < autoSaveToSheet._until) return;
+    autoSaveToSheet._until = now + 2000; // cooldown 2s
+
+    try { typeof window.syncSaveFields === 'function' && window.syncSaveFields(); } catch(e){ console.warn('syncSaveFields', e); }
+
+    const send = window.sendToSheetSafe || window.sendToSheet;
+    if (typeof send === 'function') {
+      try { send(); } catch (e) { console.warn('sendToSheet failed', e); }
+    } else {
+      console.warn('sendToSheet function not found');
+    }
+  }
+  window.autoSaveToSheet = autoSaveToSheet;
+
+  // fungsi ringkas untuk mengekstrak “jejak perubahan”
+  function snapshotKey(){
+    const s = window.state || {};
+    const m = (s.missions || {});
+    const s1 = Array.isArray(m.s1) ? m.s1.join('') : '';
+    const s2 = Array.isArray(m.s2) ? m.s2.join('') : '';
+    return JSON.stringify({
+      fld:  s.profile && s.profile.field || '',
+      pth:  s.pathway || '',
+      s1, s2,
+      g:    !!m.goalsSaved,
+      cv:   !!m.cvBuilt,
+      ex:   !!m.explorerCompleted,
+      cvh:  JSON.stringify(s.cv || {})      // bila CV berubah
+    });
+  }
+
+  // balut saveState sekali sahaja
+  if (!window.__saveStateWrapped && typeof window.saveState === 'function') {
+    window.__saveStateWrapped = true;
+    const orig = window.saveState;
+    let last = '';
+    window.saveState = function(){
+      const out = orig.apply(this, arguments);  // jalankan simpanan asal
+      try {
+        const cur = snapshotKey();
+        if (cur !== last) {                     // hanya bila benar-benar berubah
+          last = cur;
+          setTimeout(autoSaveToSheet, 0);       // auto-save (async, tak block UI)
+        }
+      } catch(e){ console.warn('autosave hook', e); }
+      return out;
+    };
+    console.log('[AUTO] saveState wrapped for autosave');
+  } else {
+    console.warn('[AUTO] saveState not found or already wrapped');
+  }
+})();*/
+
+// === Auto save setiap kali saveState dipanggil (cooldown + snapshot) ===
+(function wrapSaveStateOnce(){
+  function ready(fn){                 // cuba wrap sekarang; jika belum, cuba lagi
+    if (typeof window.saveState === 'function') return fn();
+    setTimeout(()=>ready(fn), 0);
+  }
+  ready(function(){
+    if (window.__saveStateWrapped) return;
+    window.__saveStateWrapped = true;
+
+    const orig = window.saveState;
+    let last = '';                   // untuk detect perubahan bermakna
+    let until = 0;                   // throttle 2s
+
+    function snapshotKey(){
+      const s = window.state || {};
+      const m = s.missions || {};
+      const s1 = Array.isArray(m.s1) ? m.s1.join('') : '';
+      const s2 = Array.isArray(m.s2) ? m.s2.join('') : '';
+      return JSON.stringify({
+        fld:  s.profile && s.profile.field || '',
+        pth:  s.pathway || '',
+        s1, s2,
+        g:    !!m.goalsSaved,
+        cv:   !!m.cvBuilt,
+        ex:   !!m.explorerCompleted,
+        cvh:  JSON.stringify(s.cv || {})
+      });
+    }
+
+    window.saveState = function(){
+      const out = orig.apply(this, arguments);
+
+      /*try {
+        const now = Date.now();
+        const snap = snapshotKey();
+        if (snap !== last && now >= until) {
+          last = snap;
+          until = now + 2000; // cooldown 2s
+          try { if (typeof window.syncSaveFields === 'function') window.syncSaveFields(); } catch(e){ console.warn('syncSaveFields:', e); }
+          const send = window.sendToSheetSafe || window.sendToSheet;
+          if (typeof send === 'function') setTimeout(()=>{ try { send(); } catch(e){ console.warn(e); } }, 0);
+          else console.warn('sendToSheet function not found');
+        }
+      } catch (e) { console.warn('autosave hook:', e); }*/
+
+      // di dalam window.saveState = function(){ ... } (wrapper autosave)
+      try {
+        const now = Date.now();
+        const snap = snapshotKey();
+        if (snap !== last && now >= until) {
+          // >>> GUARD: skip bila logout / tak login / tiada email
+          if (window.__noSheet) return;
+          if (!state?.auth?.isLoggedIn) return;
+          const emailNow = state?.profile?.email || state?.auth?.email || '';
+          if (!emailNow) return;
+
+          last = snap;
+          until = now + 2000; // cooldown
+          try { typeof window.syncSaveFields==='function' && window.syncSaveFields(); } catch(e){}
+          const send = window.sendToSheetSafe || window.sendToSheet;
+          if (typeof send === 'function') setTimeout(()=>{ try{ send(); }catch(e){} },0);
+        }
+      } catch(e) { /* ... */ }
+
+
+      return out;
+    };
+
+    console.log('[AUTO] saveState wrapped for autosave');
+  });
+})();
+
