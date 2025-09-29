@@ -196,7 +196,7 @@
 <span class="text-red-500 mr-2">⚠️</span> <span id="errorText"></span>
 </div>
 </div>
-<p class="text-sm text-gray-600 mb-4"><span class="text-red-500">*</span> Required fields</p><button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700" type="button" onclick="saveProfile()">Save Profile</button>
+<p class="text-sm text-gray-600 mb-4"><span class="text-red-500">*</span> Required fields</p><button type="button" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700" onclick="saveProfile()">Save Profile</button>
 <button onclick="resetProfile()" style="margin-top:10px;background-color:#d32f2f;color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;">Reset Semua Data</button>
 </div>
 </div>
@@ -378,7 +378,7 @@
 <div>
 <span class="text-sm font-medium text-gray-700">Time Horizon:</span> <span class="text-sm font-bold text-blue-600" id="currentTimeHorizon">Not Selected</span>
 </div>
-</div><button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold" onclick="showScreen('goals')">Set Your Goals</button>
+</div><button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold" id="btnSetGoals" onclick="showScreen('goals')">Set Your Goals</button>
 </div>
 <div class="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-lg text-center hover:shadow-lg transition-shadow">
 <div class="text-5xl mb-4">
@@ -388,7 +388,7 @@
 <p class="text-gray-600 mb-4">Create your professional curriculum vitae</p>
 <div class="mb-4">
 <span class="text-sm font-medium text-gray-700">Status:</span> <span class="text-sm font-bold text-green-600" id="currentCVStatus">Not Generated</span>
-</div><button class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold" onclick="showScreen('cvbuilder')">Build CV</button>
+</div><button class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold"  id="btnCVBuilder" onclick="showScreen('cvbuilder')">Build CV</button>
 </div>
 </div>
 </div>
@@ -1393,7 +1393,7 @@
 
 <!-- ===== GAS Bridge (Apps Script integration) ===== -->
 <script src="assets/js/config.js"></script>
-<script src="assets/js/script.js?v=2025-09-29b"></script>
+<script src="assets/js/script.js"></script>
 
 
 
