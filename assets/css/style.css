@@ -77,3 +77,40 @@ body.has-footer { padding-bottom: 72px; }
 .forgot-btn:hover {
   color: #0056b3;
 }
+
+.cv-modal.hidden{display:none}
+.cv-modal{position:fixed;inset:0;z-index:9999}
+.cv-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.cv-dialog{
+  position:absolute;inset:5% 6%;
+  background:#fff;border-radius:10px;display:flex;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden
+}
+.cv-head,.cv-foot{display:flex;gap:10px;align-items:center;padding:10px 12px;background:#f4f6fb}
+.cv-head .spacer{flex:1}
+#cvFrame{flex:1;border:0;width:100%}
+.cv-foot{justify-content:flex-end}
+.cv-foot .primary{background:#1f5eff;color:#fff;border:0;padding:8px 14px;border-radius:8px}
+
+.page{
+  width:210mm; min-height:297mm; margin:16px auto; background:#fff;
+  border-radius:10px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08);
+  position: relative; /* penting untuk pseudo-element */
+}
+
+
+/* jalur kiri sentiasa penuh setinggi .page */
+.page::before{
+  content:"";
+  position:absolute; inset:0 auto 0 0;  /* top:0; right:auto; bottom:0; left:0 */
+  width:32%;               /* ikut lebar sidebar */
+  background: var(--navy);  /* warna sama seperti .side */
+  border-top-left-radius:10px;
+  border-bottom-left-radius:10px;
+  z-index:0;
+}
+
+/* pastikan kandungan di atas jalur */
+.cv{display:flex; min-height:297mm; width:100%; position:relative; z-index:1;}
+/* .side boleh kekal background yang sama atau dibuang – tak mengapa */
+
