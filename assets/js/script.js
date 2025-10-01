@@ -6491,33 +6491,22 @@ const slug = s => String(s||'').trim().replace(/\s+/g,'_').replace(/[^\w\-]+/g,'
 }*/
 
 function onPrintDownloadCV(){
-  // 1) Buka window awal untuk kekalkan user-gesture
-  const win = window.open('about:blank', '_blank');
-  if (!win) {
-    alert('Popup disekat. Sila benarkan pop-ups untuk laman ini.');
-    return;
-  }
-
-  // 2) Build HTML dari data yang sama dengan preview
   const cvData = collectCVDataForPreview();
   const html   = buildCVHTML(cvData);
 
-  // 3) Tulis kandungan & auto buka dialog Print
-  win.document.open();
-  win.document.write(
-    html + '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script>'
-  );
-  win.document.close();
+  // 1) Buka & auto buka dialog Print (fallback mobile guna Blob jika popup blocked)
+  openHTML(html, { autoPrint: true, preferSameTabOnMobile: true });
 
-  // 4) Hantar ke GAS (fire-and-forget). Jangan tunggu supaya pop-up tak terblok.
-  const school = (state?.profile?.school || state?.passport?.school || 'School')
-                  .trim().replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
-  const name   = (cvData.name || 'Name').trim().replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
-  const filename = `${school}_${name}_CV`;
-
-  if (typeof postToGAS === 'function') {
-    try { postToGAS('saveCVPdf', { html, filename }); } catch(e) { /* ignore */ }
-  }
+  // 2) Hantar ke GAS untuk simpan PDF dalam Drive (fire-and-forget, tak block UI)
+  try {
+    const school = (state?.profile?.school || state?.passport?.school || 'School')
+                    .trim().replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
+    const name   = (cvData.name || 'Name').trim().replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
+    const filename = `${school}_${name}_CV`;
+    if (typeof postToGAS === 'function') {
+      postToGAS('saveCVPdf', { html, filename });
+    }
+  } catch(_) {}
 }
 
 
