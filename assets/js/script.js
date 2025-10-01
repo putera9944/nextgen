@@ -2233,6 +2233,10 @@ function saveProfile() {
 
         // CV Builder functions
         function loadCVBuilderPage() {
+            const root = document.getElementById('cvbuilder');
+            if (root && root.dataset.hydrated === '1') return;
+            if (root) root.dataset.hydrated = '1';
+
             document.getElementById('cvFullName').value = state.profile.name || '';
             document.getElementById('cvEmail').value = state.profile.email || '';
             
@@ -2612,7 +2616,7 @@ function saveProfile() {
             }
         }
 
-        function loadEducationEntries() {
+        /*function loadEducationEntries() {
             // Load saved education entries if they exist
             if (state.cv && state.cv.educationEntries) {
                 state.cv.educationEntries.forEach(entry => {
@@ -2649,7 +2653,60 @@ function saveProfile() {
                     }
                 });
             }
-        }
+        }*/
+
+            // --- REPLACE / KEMASKINI fungsi ini ---
+function loadExperienceEntries() {
+  const container = document.getElementById('experienceEntries');
+  if (!container) return;
+  container.innerHTML = '';                 // <-- cegah duplikasi
+
+  const arr = Array.isArray(state.cv?.experienceEntries)
+    ? state.cv.experienceEntries : [];
+
+  if (arr.length === 0) {                   // tiada data tersimpan
+    addExperienceEntry();                   // beri satu borang kosong
+    return;
+  }
+
+  arr.forEach(entry => {
+    addExperienceEntry();
+    const last = container.lastElementChild;
+    last.querySelector('.experience-company').value = entry.company || '';
+    last.querySelector('.experience-position').value = entry.position || '';
+    last.querySelector('.experience-start').value   = entry.startDate || '';
+    last.querySelector('.experience-end').value     = entry.endDate || '';
+    last.querySelector('.experience-description').value = entry.description || '';
+    if (entry.isCurrent) {
+      const cb = last.querySelector('.experience-current');
+      cb.checked = true;
+      toggleCurrentJob(cb);
+    }
+  });
+}
+
+// --- JUGA kemas kini Education seiras ---
+function loadEducationEntries() {
+  const container = document.getElementById('educationEntries');
+  if (!container) return;
+  container.innerHTML = '';                 // <-- cegah duplikasi
+
+  const arr = Array.isArray(state.cv?.educationEntries)
+    ? state.cv.educationEntries : [];
+
+  if (arr.length === 0) { addEducationEntry(); return; }
+
+  arr.forEach(entry => {
+    addEducationEntry();
+    const last = container.lastElementChild;
+    last.querySelector('.education-institution').value = entry.institution || '';
+    last.querySelector('.education-degree').value      = entry.degree || '';
+    last.querySelector('.education-start').value       = entry.startYear || '';
+    last.querySelector('.education-end').value         = entry.endYear || '';
+  });
+}
+
+
 
         function collectEducationData() {
             const entries = [];
@@ -2744,251 +2801,52 @@ function saveProfile() {
             return `${experience} in ${fieldName}. ${achievements}, combining ${expertise.toLowerCase()} with strong problem-solving abilities. ${vision}. Proven track record of continuous learning, collaboration, and delivering results in dynamic environments.`;
         }
 
-        function previewCV() {
-            const educationEntries = collectEducationData();
-            const experienceEntries = collectExperienceData();
-            
-            const cvData = {
-                name: document.getElementById('cvFullName').value,
-                email: document.getElementById('cvEmail').value,
-                phone: document.getElementById('cvPhone').value,
-                location: document.getElementById('cvLocation').value,
-                summary: document.getElementById('cvSummary').value,
-                educationEntries: educationEntries,
-                experienceEntries: experienceEntries,
-                profilePicture: state.cv?.profilePicture || null,
-                selectedTechnicals: state.cv?.selectedTechnicals || [],
-                selectedSofts: state.cv?.selectedSofts || [],
-                selectedLanguages: state.cv?.selectedLanguages || [],
-                selectedAchievements: state.cv?.selectedAchievements || [],
-                selectedExtracurriculars: state.cv?.selectedExtracurriculars || [],
-                goals: state.goals || {}
-            };
-            
-            const previewWindow = window.open('', '_blank');
-            previewWindow.document.write(`
-              <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>CV Preview - ${cvData.name}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
-                        .header { display: flex; align-items: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                        .profile-section { flex: 1; }
-                        .profile-picture { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-left: 20px; border: 3px solid #333; }
-                        .no-picture { width: 120px; height: 120px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin-left: 20px; border: 3px solid #333; color: #666; font-size: 12px; }
-                        .section { margin-bottom: 25px; }
-                        .section h3 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px; }
-                        .contact-info { margin-top: 10px; }
-                        .contact-info span { display: block; margin-bottom: 5px; }
-                        .skills-list, .achievements-list, .activities-list { display: flex; flex-wrap: wrap; gap: 8px; }
-                        .skill-tag, .achievement-tag, .activity-tag { background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 15px; font-size: 14px; }
-                        .goals-section { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; }
-                        @media print { body { margin: 0; padding: 15px; } .no-print { display: none; } }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <div class="profile-section">
-                            <h1 style="margin: 0; font-size: 2.5em;">${cvData.name}</h1>
-                            <div class="contact-info">
-                                <span><strong>Email:</strong> ${cvData.email}</span>
-                                ${cvData.phone ? `<span><strong>Phone:</strong> ${cvData.phone}</span>` : ''}
-                                ${cvData.location ? `<span><strong>Location:</strong> ${cvData.location}</span>` : ''}
-                            </div>
-                        </div>
-                        ${cvData.profilePicture ? 
-                            `<img src="${cvData.profilePicture}" alt="Profile Picture" class="profile-picture">` : 
-                            `<div class="no-picture">No Photo</div>`
-                        }
-                    </div>
-                    
-                    ${cvData.summary ? `
-                    <div class="section">
-                        <h3>Professional Summary</h3>
-                        <p>${cvData.summary}</p>
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.goals.content ? `
-                    <div class="section">
-                        <h3>Career Goals (${cvData.goals.horizon || '5'} Years)</h3>
-                        <div class="goals-section">
-                            ${cvData.goals.isCustom ? 
-                                `<div style="white-space: pre-line;">${cvData.goals.customContent || cvData.goals.content}</div>` :
-                                cvData.goals.content
-                            }
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.educationEntries && cvData.educationEntries.length > 0 ? `
-                    <div class="section">
-                        <h3>Education</h3>
-                        ${cvData.educationEntries.map(edu => `
-                            <div style="margin-bottom: 15px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <strong>${edu.degree}</strong>
-                                    <span style="color: #666; font-size: 14px;">${edu.startYear} - ${edu.endYear}</span>
-                                </div>
-                                <div style="color: #666; font-style: italic;">${edu.institution}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    ${(cvData.selectedTechnicals && cvData.selectedTechnicals.length > 0) || 
-                      (cvData.selectedSofts && cvData.selectedSofts.length > 0) || 
-                      (cvData.selectedLanguages && cvData.selectedLanguages.length > 0) ? `
-                    <div class="section">
-                        <h3>Skills</h3>
-                        ${cvData.selectedTechnicals && cvData.selectedTechnicals.length > 0 ? `
-                            <div style="margin-bottom: 15px;">
-                                <strong>Technical Skills:</strong>
-                                <div class="skills-list" style="margin-top: 8px;">
-                                    ${cvData.selectedTechnicals.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        ${cvData.selectedSofts && cvData.selectedSofts.length > 0 ? `
-                            <div style="margin-bottom: 15px;">
-                                <strong>Soft Skills:</strong>
-                                <div class="skills-list" style="margin-top: 8px;">
-                                    ${cvData.selectedSofts.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        ${cvData.selectedLanguages && cvData.selectedLanguages.length > 0 ? `
-                            <div>
-                                <strong>Languages:</strong>
-                                <div class="skills-list" style="margin-top: 8px;">
-                                    ${cvData.selectedLanguages.map(lang => `<span class="skill-tag">${lang}</span>`).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.experienceEntries && cvData.experienceEntries.length > 0 ? `
-                    <div class="section">
-                        <h3>Experience</h3>
-                        ${cvData.experienceEntries.map(exp => `
-                            <div style="margin-bottom: 20px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <strong>${exp.position}</strong>
-                                    <span style="color: #666; font-size: 14px;">${formatDate(exp.startDate)} - ${exp.endDate === 'Present' ? 'Present' : formatDate(exp.endDate)}</span>
-                                </div>
-                                <div style="color: #666; font-style: italic; margin-bottom: 8px;">${exp.company}</div>
-                                ${exp.description ? `<p style="margin: 0; line-height: 1.4;">${exp.description}</p>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.selectedAchievements && cvData.selectedAchievements.length > 0 ? `
-                    <div class="section">
-                        <h3>Achievements & Awards</h3>
-                        <div class="achievements-list">
-                            ${cvData.selectedAchievements.map(achievement => `<span class="achievement-tag">${achievement}</span>`).join('')}
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    ${cvData.selectedExtracurriculars && cvData.selectedExtracurriculars.length > 0 ? `
-                    <div class="section">
-                        <h3>Extracurricular Activities</h3>
-                        <div class="activities-list">
-                            ${cvData.selectedExtracurriculars.map(activity => `<span class="activity-tag">${activity}</span>`).join('')}
-                        </div>
-                    </div>
-                    ` : ''}
-                
-<script>
+        // === CV shared helpers (global) ===
+// Pastikan tersedia untuk previewCV() & buildCVHTML()
 (function(){
-  function waitForData(cb, tries=40){
-    if ((window.fieldsData) && window.state && state.profile) { cb(); return; }
-    if (tries <= 0) { cb(); return; }
-    setTimeout(()=>waitForData(cb, tries-1), 200);
+  if (!window.icon) {
+    window.icon = (name)=>({
+      mail:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"/></svg>`,
+      phone:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.9 11.9 0 0 0 3.8.6 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h2.5a1 1 0 0 1 1 1 11.9 11.9 0 0 0 .6 3.8 1 1 0 0 1-.25 1l-2.25 2z"/></svg>`,
+      map:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>`,
+      web:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.2a15 15 0 0 0-1.5-6 8.1 8.1 0 0 1 4.7 6zM12 4.1c.9 1.5 1.6 3.4 1.9 4.9H10c.3-1.5 1-3.4 2-4.9zM4.6 11A8.1 8.1 0 0 1 9.3 5a15 15 0 0 0-1.5 6H4.6zm3.2 2a15 15 0 0 0 1.5 6A8.1 8.1 0 0 1 4.6 13h3.2zm4.2 6.9c-1-1.5-1.7-3.4-2-4.9h3.9c-.3 1.5-1 3.4-1.9 4.9zM19.4 13a8.1 8.1 0 0 1-4.7 6 15 15 0 0 0 1.5-6h3.2zm-7.5-2h4c.1.7.1 1.3.1 2s0 1.3-.1 2h-4c-.1-.7-.1-1.3-.1-2s0-1.3.1-2z"/></svg>`,
+      grad:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 11 6-11 6-5-2.73V17H5v-5L1 9l11-6z"/></svg>`,
+      brief:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4h4a2 2 0 0 1 2 2v1h4a2 2 0 0 1 2 2v2H2V9a2 2 0 0 1 2-2h4V6a2 2 0 0 1 2-2zm-2 3h8V6a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v1zM2 13h20v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4z"/></svg>`,
+      user:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/></svg>`,
+      target:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 1 0 4 4 4 4 0 0 0-4-4Zm0-6a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"/></svg>`,
+      star:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12 17.27 6.18 3.73-1.64-7.03L21 9.24l-7.19-.62L12 2 10.19 8.62 3 9.24l4.46 4.73L5.82 21z"/></svg>`,
+      group:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"/></svg>`
+    }[name]||'');
   }
-  function run(){
-    (window.updatePassportEnhanced || window.updatePassport)?.();
+  if (!window.fmt) {
+    window.fmt = function(v){
+      if (!v) return '';
+      const d = new Date(/\d{4}-\d{2}/.test(v) ? v + '-01' : v);
+      if (isNaN(d)) return v;
+      return d.toLocaleString('en-US', {month:'short', year:'numeric'});
+    };
   }
-  document.addEventListener('DOMContentLoaded', function(){
-    const p = document.getElementById('passport');
-    if (p && !p.classList.contains('hidden')) {
-      waitForData(run);
-    }
-  });
+  if (!window.esc) {
+    window.esc = function(s){
+      return String(s ?? '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    };
+  }
 })();
-<\/script>
-
-
-<script>
-(function(){
-  function resolveName(){
-    try{
-      if (window.state && state.profile && state.profile.name) return state.profile.name;
-      if (window.state && state.auth && state.auth.name) return state.auth.name;
-      const ls = localStorage.getItem('regName'); if (ls) return ls;
-      const email = (state && state.profile && state.profile.email) || localStorage.getItem('regEmail') || '';
-      if (email && email.includes('@')) return email.split('@')[0];
-    }catch(e){}
-    return '-';
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    const nm = resolveName();
-    const header = document.getElementById('headerRegName'); if (header) header.textContent = nm;
-    const pn = document.getElementById('passportName'); if (pn) pn.textContent = nm;
-  });
-})();
-<\/script>
-
-
-<script>
-(function(){
-  function doLogout(){
-    try {
-      if (window.state) {
-        state.auth = { isLoggedIn: false };
-        try { localStorage.removeItem('regName'); } catch(e){}
-        try { localStorage.removeItem('regEmail'); } catch(e){}
-        if (typeof saveState === 'function') saveState();
-      }
-    } catch(e){}
-    // Navigate to cover/login
-    if (typeof showScreen === 'function') {
-      showScreen('cover');
-    } else if (typeof switchTo === 'function') {
-      switchTo('cover');
-    } else {
-      // Fallback: hide all .screen and show #cover
-      try {
-        document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
-        const cover = document.getElementById('cover'); if (cover) cover.classList.remove('hidden');
-      } catch(e) {}
-    }
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    const btn = document.getElementById('logoutBtn');
-    if (btn && !btn.dataset.boundLogout){
-      btn.addEventListener('click', function(e){ e.preventDefault(); doLogout(); });
-      btn.dataset.boundLogout = '1';
-    }
-  });
-  // Expose for reuse
-  window.doLogout = doLogout;
-})();
-<\/script>
 
 
 
 
-</body>
-                </html>
+function previewCV(){
+  const html = buildCVHTML(collectCVDataForPreview());
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
 
-            `);
-            previewWindow.document.close();
-        }
+
+
 
         function formatDate(dateString) {
             if (!dateString) return '';
@@ -2996,7 +2854,7 @@ function saveProfile() {
             return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
         }
 
-        function saveCV() {
+        /*function saveCV() {
             const educationEntries = collectEducationData();
             const experienceEntries = collectExperienceData();
             
@@ -3031,7 +2889,98 @@ function saveProfile() {
             
             updateLearningScreen();
             showScreen('dashboard');
-        }
+        }*/
+
+/*async function saveCV(){
+  const educationEntries  = collectEducationData();
+  const experienceEntries = collectExperienceData();
+
+  state.cv = {
+    ...(state.cv || {}),
+    name: document.getElementById('cvFullName').value,
+    email: document.getElementById('cvEmail').value,
+    phone: document.getElementById('cvPhone').value,
+    location: document.getElementById('cvLocation').value,
+    summary: document.getElementById('cvSummary').value,
+    educationEntries,
+    experienceEntries
+  };
+
+  saveState();
+  updateFooterLocks();                // sorok/unjuk footer passport
+            
+  updateLearningScreen();
+
+  try { await saveCVToSheet(); } catch(e){ console.warn(e); }
+  alert('CV saved successfully! +25 marks earned.');
+  updateHamburgerLocks?.();
+  
+  document.getElementById('btnPrintDownloadCV').style.display = 'inline-flex';
+
+}*/
+
+async function saveCV(){
+  const educationEntries  = collectEducationData();
+  const experienceEntries = collectExperienceData();
+
+  const cvData = {
+    ...(state.cv || {}),
+    name: document.getElementById('cvFullName').value,
+    email: document.getElementById('cvEmail').value,
+    phone: document.getElementById('cvPhone').value,
+    location: document.getElementById('cvLocation').value,
+    summary: document.getElementById('cvSummary').value,
+    educationEntries,
+    experienceEntries,
+    selectedTechnicals: state.cv?.selectedTechnicals || [],
+    selectedSofts: state.cv?.selectedSofts || [],
+    selectedLanguages: state.cv?.selectedLanguages || [],
+    selectedAchievements: state.cv?.selectedAchievements || [],
+    selectedExtracurriculars: state.cv?.selectedExtracurriculars || [],
+    goals: state.goals || {},
+    profilePicture: state.cv?.profilePicture || state.profile?.profilePicture || ''
+  };
+
+  // simpan & hantar
+  state.cv = cvData;
+  //try { saveToGoogleSheet(); }catch(e){}
+  state.missions.cvBuilt = true;
+
+  saveState();
+  updateFooterLocks();
+  updateLearningScreen();
+  alert('CV saved successfully! +25 marks earned.');
+  updateHamburgerLocks?.();
+  markCvSavedUI?.();  // unlock passport menu
+
+  document.getElementById('btnPrintDownloadCV').style.display = 'inline-flex';
+}
+
+
+// === helper untuk unlock Passport ===
+function markCvSavedUI(){
+  window.state = window.state || {};
+  state.flags = { ...(state.flags||{}), cvSaved: true };
+  localStorage.setItem('tvet.cv.saved', '1');
+
+  document.querySelectorAll('[data-req="cvSaved"]').forEach(el=>{
+    el.classList.remove('disabled');
+    el.removeAttribute('aria-disabled');
+    el.removeAttribute('tabindex');
+    el.style.pointerEvents = '';
+    el.style.opacity = '';
+  });
+}
+
+// === auto-restore flag bila reload page ===
+(function restoreCvSavedFlag(){
+  if (localStorage.getItem('tvet.cv.saved') === '1') {
+    window.state = window.state || {};
+    state.flags = { ...(state.flags||{}), cvSaved: true };
+    document.addEventListener('DOMContentLoaded', markCvSavedUI);
+  }
+})();
+
 
         // Fields Management
         function populateFields() {
@@ -6089,6 +6038,443 @@ function buildPassportRow(){
   };
 }
 
+// Helper umum hantar ke GAS (no preflight)
+async function postToGAS(action, data){
+  const cfg = window.GAS_CONFIG || {};
+  if (!cfg.endpoint || !/^https:/.test(cfg.endpoint)) {
+    console.warn('GAS endpoint not configured/HTTPS missing');
+    return;
+  }
+  const payload = JSON.stringify({ token: cfg.token || '', action, data });
+  try {
+    await fetch(cfg.endpoint, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload
+    });
+  } catch (e) {
+    console.warn('postToGAS error:', e);
+  }
+}
+
+
+// ⚠️ KEKALKAN fungsi lama ini untuk Passport.
+// async function saveToGoogleSheet(customRow){ ... }  <-- biarkan seperti sedia ada
+
+// Fungsi BARU khas untuk CV
+async function saveCVToSheet(customRow){
+  const row = customRow || (typeof buildCVRow === 'function' ? buildCVRow() : {
+    email:  state?.cv?.email || state?.profile?.email || '',
+    name:   state?.cv?.name  || state?.profile?.name  || '',
+    phone:  state?.cv?.phone || '',
+    location: state?.cv?.location || '',
+    summary:  state?.cv?.summary || '',
+    educationEntries: state?.cv?.educationEntries || [],
+    experienceEntries: state?.cv?.experienceEntries || [],
+    selectedTechnicals: state?.cv?.selectedTechnicals || [],
+    selectedSofts: state?.cv?.selectedSofts || [],
+    selectedLanguages: state?.cv?.selectedLanguages || [],
+    selectedAchievements: state?.cv?.selectedAchievements || [],
+    selectedExtracurriculars: state?.cv?.selectedExtracurriculars || [],
+    goals: state?.goals || {},
+    profilePicture: state?.cv?.profilePicture || state?.profile?.profilePicture || ''
+  });
+  return postToGAS('saveCV', row);
+}
+
+// --- dapatkan sekolah untuk nama fail ---
+function getSchoolName(){
+  return (
+    state?.passport?.school ||
+    state?.profile?.school ||
+    document.getElementById('schoolName')?.value ||
+    ''
+  ).trim();
+}
+
+// --- pembina data & HTML: guna yang sama dgn preview ---
+function collectCVDataForPreview(){
+  const educationEntries  = (typeof collectEducationData  === 'function' ? collectEducationData()  : []) || [];
+  const experienceEntries = (typeof collectExperienceData === 'function' ? collectExperienceData() : []) || [];
+  return {
+    name: document.getElementById('cvFullName')?.value || '',
+    email: document.getElementById('cvEmail')?.value || '',
+    phone: document.getElementById('cvPhone')?.value || '',
+    location: document.getElementById('cvLocation')?.value || '',
+    summary: document.getElementById('cvSummary')?.value || '',
+    educationEntries, experienceEntries,
+    profilePicture: (window.state?.cv?.profilePicture || window.state?.profile?.profilePicture || ''),
+    selectedTechnicals: window.state?.cv?.selectedTechnicals || [],
+    selectedSofts: window.state?.cv?.selectedSofts || [],
+    selectedLanguages: window.state?.cv?.selectedLanguages || [],
+    selectedAchievements: window.state?.cv?.selectedAchievements || [],
+    selectedExtracurriculars: window.state?.cv?.selectedExtracurriculars || [],
+    goals: window.state?.goals || {},
+    projects: window.state?.cv?.projects || []
+  };
+}
+
+// IMPORTANT: tampal isi template HTML/CSS yang SAMA dengan previewCV Pro anda ke fungsi ini
+function buildCVHTML(cvData, opts={}){ 
+  
+  const icon = (name) => ({
+    mail:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"/></svg>`,
+    phone:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.9 11.9 0 0 0 3.8.6 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h2.5a1 1 0 0 1 1 1 11.9 11.9 0 0 0 .6 3.8 1 1 0 0 1-.25 1l-2.25 2z"/></svg>`,
+    map:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>`,
+    web:`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.2a15 15 0 0 0-1.5-6 8.1 8.1 0 0 1 4.7 6zM12 4.1c.9 1.5 1.6 3.4 1.9 4.9H10c.3-1.5 1-3.4 2-4.9zM4.6 11A8.1 8.1 0 0 1 9.3 5a15 15 0 0 0-1.5 6H4.6zm3.2 2a15 15 0 0 0 1.5 6A8.1 8.1 0 0 1 4.6 13h3.2zm4.2 6.9c-1-1.5-1.7-3.4-2-4.9h3.9c-.3 1.5-1 3.4-1.9 4.9zM19.4 13a8.1 8.1 0 0 1-4.7 6 15 15 0 0 0 1.5-6h3.2zm-7.5-2h4c.1.7.1 1.3.1 2s0 1.3-.1 2h-4c-.1-.7-.1-1.3-.1-2s0-1.3.1-2z"/></svg>`,
+    grad:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 11 6-11 6-5-2.73V17H5v-5L1 9l11-6z"/></svg>`,
+    brief:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4h4a2 2 0 0 1 2 2v1h4a2 2 0 0 1 2 2v2H2V9a2 2 0 0 1 2-2h4V6a2 2 0 0 1 2-2zm-2 3h8V6a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v1zM2 13h20v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4z"/></svg>`,
+    user:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/></svg>`,
+    target:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 1 0 4 4 4 4 0 0 0-4-4Zm0-6a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"/></svg>`,
+    star:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12 17.27 6.18 3.73-1.64-7.03L21 9.24l-7.19-.62L12 2 10.19 8.62 3 9.24l4.46 4.73L5.82 21z"/></svg>`,
+    group:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5C23 14.17 18.33 13 16 13z"/></svg>`
+  }[name] || '');
+
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CV Preview - ${cvData.name || 'Your Name'}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#212934; --muted:#6b7380; --navy:#2f3a4b; --line:#e9edf3; --chip-bg:#eef4ff; --chip-ink:#1f5eff; }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:#f7f8fb;color:var(--ink);font:400 14px/1.6 "Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  .page{width:210mm; min-height:297mm; margin:16px auto; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08)}
+  .cv{display:flex; min-height:297mm; width:100%}
+
+.page{
+  width:210mm; min-height:297mm; margin:16px auto; background:#fff;
+  border-radius:10px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08);
+  position: relative; /* penting untuk pseudo-element */
+}
+
+
+/* jalur kiri sentiasa penuh setinggi .page */
+.page::before{
+  content:"";
+  position:absolute; inset:0 auto 0 0;  /* top:0; right:auto; bottom:0; left:0 */
+  width:32%;               /* ikut lebar sidebar */
+  background: var(--navy);  /* warna sama seperti .side */
+  border-top-left-radius:10px;
+  border-bottom-left-radius:10px;
+  z-index:0;
+}
+
+/* pastikan kandungan di atas jalur */
+.cv{display:flex; min-height:297mm; width:100%; position:relative; z-index:1;}
+/* .side boleh kekal background yang sama atau dibuang – tak mengapa */
+
+
+  .side{width:32%; background:var(--navy); color:#eaf0ff; padding:26px}
+  /* Sidebar photo – lebih besar & tiada gelang putih */
+.photo{
+  width:148px;                /* dari 120px → 148px */
+  height:148px;
+  border-radius:50%;
+  margin:6px auto 18px;
+  background:var(--navy) center/cover no-repeat; /* dulu #fff */
+  border:0;                   /* buang border putih */
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+  outline:4px solid rgba(255,255,255,.06);       /* ring halus (bukan putih pekat) */
+}
+.photo.empty{
+  display:flex;align-items:center;justify-content:center;
+  color:#cdd7ff;background:#3a475b;              /* kekalkan rupa "No Photo" */
+  outline-color:rgba(255,255,255,.08);
+}
+  /* Foto lebih besar & boleh dicetak */
+.photo-wrap{
+  width:164px;height:164px;margin:6px auto 18px;
+  background:var(--navy);border-radius:50%;display:grid;place-items:center;
+}
+.photo-img{
+  width:148px;height:148px;border-radius:50%;object-fit:cover;display:block;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+.photo-img.empty{background:#3a475b;color:#cdd7ff;display:flex;align-items:center;justify-content:center;font-size:12px}
+
+
+//  .photo{width:148px; height:148px; border-radius:50%; margin:4px auto 16px; background:#fff center/cover no-repeat; border:6px solid rgba(255,255,255,.15); box-shadow:0 8px 20px rgba(0,0,0,.25)}
+//  .photo.empty{display:flex;align-items:center;justify-content:center;color:#cdd7ff;background:#3a475b}
+  .side h4{margin:18px 0 10px; font-size:15px; font-weight:700; letter-spacing:.2px; border-bottom:2px solid rgba(255,255,255,.15); padding-bottom:6px}
+  .contact,.edu{list-style:none;padding:0;margin:0}
+  .contact li{display:flex;align-items:center;gap:8px;margin-top:10px;word-break:break-word}
+  .contact a{color:#d8e4ff;text-decoration:none}
+  .contact a:hover{text-decoration:underline}
+  .edu li{margin:10px 0 0}
+  .edu .deg{color:#fff;font-weight:600}
+  .edu .meta{color:#b8c1d1;font-size:12.5px}
+  .skills .chips,.langs .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--chip-bg);color:var(--chip-ink);padding:4px 10px;border-radius:14px;font-size:12.5px}
+  .main{width:68%; padding:30px 36px}
+  .name{font-size:34px; font-weight:800; margin:0}
+  .role{margin-top:-2px; color:var(--muted); font-weight:600}
+  .divider{height:1px;background:var(--line);margin:18px 0 10px}
+  .section{margin:18px 0 8px}
+  .section h3{margin:0 0 8px; font-size:18px; font-weight:800; color:var(--ink); border-bottom:3px solid var(--line); padding-bottom:8px; display:flex; align-items:center; gap:8px}
+  .summary{color:var(--muted)}
+  .job{margin:14px 0 18px}
+  .job .when{color:var(--muted);font-size:13px}
+  .job .company{color:var(--muted);font-style:italic;margin:2px 0 6px}
+  .bullets{margin:0 0 0 18px;padding:0}
+  .bullets li{margin:4px 0}
+  .section, .job, .edu li { break-inside: avoid; }
+  @page { size: A4; margin: 15mm; }
+  /* Paksa warna latar dicetak (Chrome/Edge/Safari) */
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .side{background:var(--navy) !important}
+  .page::before{background:var(--navy) !important}
+  .chip{background:var(--chip-bg) !important;color:var(--chip-ink) !important}
+  /* buang shadow supaya output lebih bersih atas kertas */
+  .page{box-shadow:none}
+}
+
+  //@media print{ body{background:#fff} .page{margin:0; box-shadow:none; border-radius:0} }
+</style>
+</head>
+<body>
+<div class="page">
+  <div id="cv-root" class="cv">
+    <aside class="side">
+
+        <div class="photo-wrap">
+        ${cvData.profilePicture
+            ? `<img class="photo-img" src="${cvData.profilePicture}" alt="Profile photo">`
+            : `<div class="photo-img empty">No Photo</div>`}
+        </div>
+      
+    
+    <!--div class="photo ${cvData.profilePicture ? '' : 'empty'}" style="${cvData.profilePicture ? 'background-image:url(' + "'" + cvData.profilePicture + "'" + ')' : ''}">
+        ${cvData.profilePicture ? '' : 'No Photo'}
+      </div-->
+
+      
+      <h4>Contact</h4>
+      <ul class="contact">
+        ${cvData.email ? '<li>'+icon('mail')+'<a href="mailto:'+cvData.email+'">'+cvData.email+'</a></li>' : ''}
+        ${cvData.phone ? '<li>'+icon('phone')+'<a href="tel:'+cvData.phone+'">'+cvData.phone+'</a></li>' : ''}
+        ${cvData.location ? '<li>'+icon('map')+'<span>'+cvData.location+'</span></li>' : ''}
+        ${cvData.website ? '<li>'+icon('web')+'<a href="'+cvData.website+'" target="_blank" rel="noreferrer">'+cvData.website.replace(/^https?:\/\//,'')+'</a></li>' : ''}
+      </ul>
+
+      ${cvData.educationEntries?.length ? (function(){
+        var html = '<h4>'+icon('grad')+' Education</h4><ul class="edu">';
+        html += cvData.educationEntries.map(function(e){
+          return '<li>'
+              + '<div class="deg">'+(e.degree||'')+'</div>'
+              + '<div>'+(e.institution||'')+'</div>'
+              + '<div class="meta">'+String(e.startYear||'')+' \u2013 '+String(e.endYear||'')+'</div>'
+              + '</li>';
+        }).join('');
+        html += '</ul>';
+        return html;
+      })() : ''}
+
+      ${cvData.selectedTechnicals?.length ? (function(){
+        var html = '<h4>Technical Skills</h4><div class="skills"><div class="chips">';
+        html += cvData.selectedTechnicals.map(function(s){ return '<span class="chip">'+s+'</span>'; }).join('');
+        html += '</div></div>';
+        return html;
+      })() : ''}
+
+      ${cvData.selectedSofts?.length ? (function(){
+        var html = '<h4>Soft Skills</h4><div class="skills"><div class="chips">';
+        html += cvData.selectedSofts.map(function(s){ return '<span class="chip">'+s+'</span>'; }).join('');
+        html += '</div></div>';
+        return html;
+      })() : ''}
+
+      ${cvData.selectedLanguages?.length ? (function(){
+        var html = '<h4>Language</h4><div class="langs"><div class="chips">';
+        html += cvData.selectedLanguages.map(function(l){ return '<span class="chip">'+l+'</span>'; }).join('');
+        html += '</div></div>';
+        return html;
+      })() : ''}
+    </aside>
+
+    <main class="main">
+      <h1 class="name">${cvData.name || 'Your Name'}</h1>
+      ${cvData.title ? '<div class="role">'+cvData.title+'</div>' : ''}
+      <div class="divider"></div>
+
+      ${cvData.summary ? '<section class="section"><h3>'+icon('user')+' Professional Summary</h3><p class="summary">'+cvData.summary+'</p></section>' : ''}
+
+      ${cvData.goals?.content ? '<section class="section"><h3>'+icon('target')+' Career Goals</h3><div>'+cvData.goals.content+'</div></section>' : ''}
+
+      ${cvData.experienceEntries?.length ? (function(){
+  var html = '<section class="section"><h3>'+icon('brief')+' Working Experience</h3>';
+  for (var i = 0; i < cvData.experienceEntries.length; i++) {
+    var x = cvData.experienceEntries[i];
+    var start = fmt(x.startDate);
+    var end   = (x.endDate === 'Present' || x.endDate === 'current') ? 'Present' : fmt(x.endDate);
+    var lines = String(x.description || '').split(/\r?\n/).filter(Boolean);
+
+    html += '<div class="job">'
+         +  '<div class="when">'+esc(start)+' \u2013 '+esc(end)+'</div>'
+         +  '<div style="font-weight:700">'+esc(x.position||'')+'</div>'
+         +  '<div class="company">'+esc(x.company||'')+'</div>'
+         +  (lines.length
+              ? '<ul class="bullets">' + lines.map(function(li){ return '<li>'+esc(li)+'</li>'; }).join('') + '</ul>'
+              : '')
+         +  '</div>';
+  }
+  html += '</section>';
+  return html;
+})() : ''}
+
+
+      ${cvData.projects?.length ? (function(){
+        var html = '<section class="section"><h3>'+icon('brief')+' Experience</h3><ul class="bullets">';
+        html += cvData.projects.map(function(p){ return '<li>'+p+'</li>'; }).join('');
+        html += '</ul></section>';
+        return html;
+      })() : ''}
+
+      ${cvData.selectedAchievements?.length ? (function(){
+        var html = '<section class="section"><h3>'+icon('star')+' Achievement & Awards</h3><ul class="bullets">';
+        html += cvData.selectedAchievements.map(function(a){ return '<li>'+a+'</li>'; }).join('');
+        html += '</ul></section>';
+        return html;
+      })() : ''}
+
+      ${cvData.selectedExtracurriculars?.length ? (function(){
+        var html = '<section class="section"><h3>'+icon('group')+' Extracurricular Activities</h3><ul class="bullets">';
+        html += cvData.selectedExtracurriculars.map(function(e){ return '<li>'+e+'</li>'; }).join('');
+        html += '</ul></section>';
+        return html;
+      })() : ''}
+    </main>
+  </div>
+</div>
+
+<script>
+  function fitToOnePage(){
+  var page = document.querySelector('.page');
+  var root = document.getElementById('cv-root');
+  if (!page || !root) return;
+
+  var target = 1123 - 112; // ~A4 @96dpi tolak margin @page
+  var rawH = root.scrollHeight;
+
+  if (rawH > target + 2){
+    var scale = Math.max(0.72, Math.min(1, target / rawH));
+    root.style.transformOrigin = 'top left';
+    root.style.transform = 'scale(' + scale + ')';
+    root.style.width = (100/scale) + '%';
+
+    // ❗ kira tinggi selepas skala untuk .page
+    var scaledH = root.getBoundingClientRect().height;
+    page.style.height = scaledH + 'px';
+  } else {
+    root.style.transform = '';
+    root.style.width = '100%';
+    page.style.height = ''; // auto
+  }
+}
+
+
+  // panggil selepas font siap & selepas load
+  (function(){
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(fitToOnePage);
+    }
+    window.addEventListener('load', fitToOnePage);
+    // fallback: panggil sekali lagi selepas 300ms (jika font lambat)
+    setTimeout(fitToOnePage, 300);
+  })();
+</script>
+
+
+<!--script>
+  function formatDateSafe(v){
+    try{
+      if (typeof window.opener?.formatDate === 'function') return window.opener.formatDate(v);
+      if (!v) return '';
+      var d = new Date(/\d{4}-\d{2}/.test(v) ? v + '-01' : v);
+      if (isNaN(d)) return v;
+      return d.toLocaleString('en-US',{month:'short', year:'numeric'});
+    }catch(e){ return v||''; }
+  }
+
+  (function fitToOnePage(){
+    var page = document.querySelector('.page');
+    var root = document.getElementById('cv-root');
+    var target = 1123 - 112; // ~297mm @96dpi minus top/bottom margins
+    var h = root.scrollHeight;
+    if (h > target){
+      var scale = Math.max(0.72, Math.min(1, target / h));
+      root.style.transformOrigin = 'top left';
+      root.style.transform = 'scale(' + scale + ')';
+      page.style.height = (h * scale + 32) + 'px';
+    }
+  })();
+</script-->
+</body>
+</html>`;
+  return html; }
+
+// --- util nama fail ---
+const slug = s => String(s||'').trim().replace(/\s+/g,'_').replace(/[^\w\-]+/g,'');
+
+// --- butang Print/Download ---
+/*async function onPrintDownloadCV(){
+  const cvData = collectCVDataForPreview();
+  const html   = buildCVHTML(cvData);
+  const school = getSchoolName() || 'School';
+  const name   = cvData.name || 'Name';
+  const filename = `${slug(school)}_${slug(name)}_CV.pdf`;
+
+  // 1) Buka preview & auto print (Save as PDF)
+  const w = window.open('', '_blank', 'noopener');
+  w.document.open();
+  w.document.write(html + '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script>');
+  w.document.close();
+
+  // 2) Simpan PDF di GDrive admin
+  if (typeof postToGAS === 'function') {
+  postToGAS('saveCVPdf', { html, filename });}
+}*/
+
+function onPrintDownloadCV(){
+  // 1) Buka window awal untuk kekalkan user-gesture
+  const win = window.open('about:blank', '_blank');
+  if (!win) {
+    alert('Popup disekat. Sila benarkan pop-ups untuk laman ini.');
+    return;
+  }
+
+  // 2) Build HTML dari data yang sama dengan preview
+  const cvData = collectCVDataForPreview();
+  const html   = buildCVHTML(cvData);
+
+  // 3) Tulis kandungan & auto buka dialog Print
+  win.document.open();
+  win.document.write(
+    html + '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script>'
+  );
+  win.document.close();
+
+  // 4) Hantar ke GAS (fire-and-forget). Jangan tunggu supaya pop-up tak terblok.
+  const school = (state?.profile?.school || state?.passport?.school || 'School')
+                  .trim().replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
+  const name   = (cvData.name || 'Name').trim().replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
+  const filename = `${school}_${name}_CV`;
+
+  if (typeof postToGAS === 'function') {
+    try { postToGAS('saveCVPdf', { html, filename }); } catch(e) { /* ignore */ }
+  }
+}
+
+
+document.getElementById('btnPrintDownloadCV')?.addEventListener('click', onPrintDownloadCV);
+
+
 async function saveToGoogleSheet(customRow){
   const row = customRow || buildPassportRow();
   const cfg = (window.GAS_CONFIG || {});
@@ -6134,6 +6520,8 @@ function collectSaveData() {
   });
   return data;
 }
+
+
 
 /*async function sendToSheet() {
   try {
