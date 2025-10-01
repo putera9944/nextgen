@@ -2838,12 +2838,19 @@ function loadEducationEntries() {
 
 
 
-function previewCV(){
+/*function previewCV(){
   const html = buildCVHTML(collectCVDataForPreview());
   const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
+}*/
+
+function previewCV(){
+  const html = buildCVHTML(collectCVDataForPreview());
+  // autoPrint = false, preferSameTabOnMobile = false (kita cuma preview)
+  openHTML(html, { autoPrint: false, preferSameTabOnMobile: false });
 }
+
 
 
 
@@ -2918,6 +2925,48 @@ function previewCV(){
   document.getElementById('btnPrintDownloadCV').style.display = 'inline-flex';
 
 }*/
+
+
+function openHTML(html, { autoPrint = false, preferSameTabOnMobile = false } = {}){
+  const ua = navigator.userAgent || '';
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+
+  // 1) Cuba buka tab/tingkap segera (less likely to be blocked jika dipanggil terus dari event klik)
+  if (!isMobile) {
+    const win = window.open('about:blank', '_blank');
+    if (win) {
+      win.document.open();
+      win.document.write(html + (autoPrint ? '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),300));<\/script>' : ''));
+      win.document.close();
+      return true;
+    }
+  }
+
+  // 2) Fallback: guna Blob URL (lebih mesra phone)
+  const blob = new Blob(
+    [ html + (autoPrint ? '<script>window.addEventListener("load",()=>setTimeout(()=>window.print && window.print(),500));<\/script>' : '') ],
+    { type: 'text/html' }
+  );
+  const url = URL.createObjectURL(blob);
+
+  if (isMobile && preferSameTabOnMobile) {
+    // buka pada tab yang sama (lebih reliable di iOS Safari)
+    window.location.href = url;
+    // blob URL akan direvoke bila user pergi/close page
+    return true;
+  } else {
+    // cuba buka tab baharu melalui anchor (lebih “trusted” pada mobile)
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 15000);
+    return true;
+  }
+}
+
 
 async function saveCV(){
   const educationEntries  = collectEducationData();
