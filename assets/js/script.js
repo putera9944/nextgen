@@ -846,6 +846,7 @@ window.login = login;  // pastikan global
 
 async function init(){
   loadState();
+  populateRegions();
   updateUI();
   populateFields();
   updateHamburgerLocks?.();
@@ -6273,7 +6274,7 @@ function buildCVHTML(cvData, opts={}){
   .bullets{margin:0 0 0 18px;padding:0}
   .bullets li{margin:4px 0}
   .section, .job, .edu li { break-inside: avoid; }
-  @page { size: A4; margin: 15mm; }
+  @page { size: A4; margin: 0mm; }
   /* Paksa warna latar dicetak (Chrome/Edge/Safari) */
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -6882,3 +6883,144 @@ window.autoSaveToSheet = autoSaveToSheet;
 })();
 
 
+/* === NEXTGEN MRSM Region→School dropdown (global) === */
+(function(){
+  'use strict';
+
+  // 1) Data MRSM mengikut negeri
+  const MRSM_BY_STATE = {
+    "Johor": ["MRSM Batu Pahat","MRSM Johor Bahru","MRSM Mersing","MRSM Muar","MRSM Tun Dr Ismail"],
+    "Kedah": ["MRSM Baling","MRSM Kubang Pasu","MRSM Langkawi","MRSM Merbok","MRSM PDRM Kulim","MRSM Pendang"],
+    "Kelantan": ["MRSM Jeli","MRSM Kuala Krai","MRSM Pasir Tumboh","MRSM Pengkalan Chepa","MRSM Tumpat"],
+    "Melaka": ["MRSM Alor Gajah","MRSM Terendak","MRSM Tun Ghafar Baba"],
+    "Negeri Sembilan": ["MRSM Gemencheh","MRSM Kuala Klawang","MRSM Serting"],
+    "Pahang": ["MRSM ATM Bera","MRSM Bentong","MRSM Kuantan","MRSM Muadzam Shah","MRSM Tun Abdul Razak","MRSM Tun Ghazali Shafie"],
+    "Perak": ["MRSM Bagan Datuk","MRSM FELDA (Trolak)","MRSM Gerik","MRSM Lenggong","MRSM Parit","MRSM Pasir Salak","MRSM Pengkalan Hulu","MRSM Sultan Azlan Shah","MRSM Taiping"],
+    "Perlis": ["MRSM Arau","MRSM Beseri"],
+    "Pulau Pinang": ["MRSM Balik Pulau","MRSM Transkrian","MRSM Tun Abdullah Ahmad Badawi"],
+    "Sabah": ["MRSM Kota Kinabalu","MRSM Ranau","MRSM Semporna","MRSM Tun Mohammad Fuad Stephens","MRSM Tun Mustapha"],
+    "Sarawak": ["MRSM Betong","MRSM Bintulu","MRSM Kuching","MRSM Mukah"],
+    "Selangor": ["MRSM Kuala Kubu Bharu","MRSM Sungai Besar"],
+    "Terengganu": ["MRSM Besut","MRSM Kota Putra","MRSM Kuala Berang","MRSM Kuala Terengganu"]
+  };
+
+  // 2) State for search filter
+  let currentSchoolOptions = [];
+
+  // 3) Helpers
+  function buildSchoolOptions(options, preselectedValue = '') {
+    const schoolSel = document.getElementById('profileSchool');
+    const wrap = document.getElementById('schoolOtherWrap');
+    const other = document.getElementById('profileSchoolOther');
+    if (!schoolSel) return;
+
+    schoolSel.innerHTML = '<option value="">Select School/Institution</option>';
+    options.forEach(name=>{
+      const o=document.createElement('option');
+      o.value=name; o.textContent=name; schoolSel.appendChild(o);
+    });
+    // Optional: Other
+    const o=document.createElement('option');
+    o.value='__OTHER__'; o.textContent='Other / Not in list';
+    schoolSel.appendChild(o);
+
+    if (preselectedValue){
+      const exists = options.includes(preselectedValue);
+      schoolSel.value = exists ? preselectedValue : '__OTHER__';
+      if (exists){ wrap?.classList.add('hidden'); }
+      else { wrap?.classList.remove('hidden'); if(other) other.value = preselectedValue; }
+    } else {
+      wrap?.classList.add('hidden'); if(other) other.value='';
+    }
+  }
+
+  // 4) Exposed globals (boleh dipanggil dari console / init)
+  window.populateRegions = function populateRegions(){
+    const sel = document.getElementById('profileRegion');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Select State</option>';
+    Object.keys(MRSM_BY_STATE).sort().forEach(st=>{
+      const o=document.createElement('option');
+      o.value=st; o.textContent=st; sel.appendChild(o);
+    });
+  };
+
+  window.populateSchoolsFor = function populateSchoolsFor(region, preselectedValue=''){
+    const mrsm = MRSM_BY_STATE[region] || [];
+    currentSchoolOptions = [...mrsm].sort();
+    buildSchoolOptions(currentSchoolOptions, preselectedValue);
+  };
+
+  window.filterSchoolOptions = function filterSchoolOptions(query){
+    const q=(query||'').toLowerCase();
+    const filtered = q ? currentSchoolOptions.filter(n=>n.toLowerCase().includes(q)) : currentSchoolOptions;
+    const currentVal = document.getElementById('profileSchool')?.value || '';
+    buildSchoolOptions(filtered, currentVal && currentVal!=='__OTHER__' ? currentVal : '');
+  };
+
+  window.applySavedRegionSchoolFromState = function applySavedRegionSchoolFromState(){
+    try{
+      const saved = (window.state && window.state.profile) || {};
+      if (!document.getElementById('profileRegion')) return;
+      if (!document.getElementById('profileRegion').options.length) window.populateRegions();
+      if (saved.region) document.getElementById('profileRegion').value = saved.region;
+      window.populateSchoolsFor(saved.region || '', saved.school || '');
+    }catch(e){ console.warn(e); }
+  };
+
+  window.applySchoolOtherBeforeSave = function applySchoolOtherBeforeSave(){
+    const sel = document.getElementById('profileSchool');
+    const other = document.getElementById('profileSchoolOther');
+    if (sel && sel.value==='__OTHER__' && other){
+      sel.dataset.manualValue = (other.value||'').trim();
+    } else if (sel){
+      delete sel.dataset.manualValue;
+    }
+  };
+
+  // 5) Wire events sekali sahaja
+  if (!window.__mrsmWired){
+    window.__mrsmWired = true;
+    document.addEventListener('change', (e)=>{
+      if (e.target?.id==='profileRegion'){
+        const s=document.getElementById('schoolSearch'); if(s) s.value='';
+        window.populateSchoolsFor(e.target.value);
+      }
+      if (e.target?.id==='profileSchool'){
+        const wrap=document.getElementById('schoolOtherWrap');
+        if (e.target.value==='__OTHER__') wrap?.classList.remove('hidden');
+        else wrap?.classList.add('hidden');
+      }
+    });
+    document.addEventListener('input', (e)=>{
+      if (e.target?.id==='schoolSearch'){
+        window.filterSchoolOptions(e.target.value);
+      }
+    });
+  }
+
+  // 6) Pastikan init() panggil populateRegions dulu
+  const originalInit = window.init;
+  window.init = async function patchedInit(){
+    try{ window.populateRegions(); }catch(e){}
+    if (typeof originalInit === 'function'){
+      return originalInit.apply(this, arguments);
+    }
+  };
+
+  // 7) Patch populateFields utk apply nilai tersimpan
+  const originalPopulateFields = window.populateFields;
+  window.populateFields = function patchedPopulateFields(){
+    const r = (typeof originalPopulateFields==='function') ? originalPopulateFields.apply(this, arguments) : undefined;
+    try{ window.applySavedRegionSchoolFromState(); }catch(e){}
+    return r;
+  };
+
+  // 8) Patch saveProfile utk sokong “Other”
+  const originalSaveProfile = window.saveProfile;
+  window.saveProfile = function patchedSaveProfile(){
+    try{ window.applySchoolOtherBeforeSave(); }catch(e){}
+    return (typeof originalSaveProfile==='function') ? originalSaveProfile.apply(this, arguments) : undefined;
+  };
+
+})();
